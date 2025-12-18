@@ -1,0 +1,377 @@
+﻿@page
+@model FX5u_Web_HMI_App.Pages.PointTable4Model
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Point Table 4"];
+}
+
+<style>
+    /* CSS FIX: Removes touch delay */
+    .hmi-btn, input {
+        touch-action: manipulation;
+    }
+
+    /* Modal & Layout Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.6);
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        color: #333;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+        border-radius: 10px;
+        position: relative;
+        text-align: center;
+    }
+
+    .close-button {
+        color: #aaa;
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    body {
+        font-family: 'Segoe UI', 'Noto Sans Gujarati', sans-serif;
+        background-color: #e9ecef;
+        color: #343a40;
+    }
+
+    .container {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        max-width: 900px;
+        margin: 50px auto;
+        text-align: center;
+    }
+
+    h1 {
+        color: #007bff;
+        margin-bottom: 30px;
+    }
+
+    .status-message {
+        margin-top: 25px;
+        padding: 12px;
+        border-radius: 5px;
+        font-weight: 500;
+        font-size: 1.1em;
+        border: 1px solid;
+    }
+
+    .status-connected {
+        background-color: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+    }
+
+    .status-disconnected, .error-message, .write-status.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+    }
+
+    .write-status {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 5px;
+        font-weight: 500;
+        text-align: left;
+        min-height: 1.5em;
+    }
+
+        .write-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+    input[type="number"] {
+        text-align: right;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        font-size: 1.05em;
+        box-sizing: border-box;
+    }
+
+    .read-only-value {
+        font-weight: bold;
+        color: #0056b3;
+        text-align: right;
+        padding: 10px;
+        font-size: 1.05em;
+        display: block;
+        min-height: 42.5px;
+    }
+
+    .data-table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+        .data-table th, .data-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .data-table th, .data-table .row-label {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .data-table .row-label {
+            text-align: left;
+        }
+
+    .register-item {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+
+        .register-item label {
+            flex: 0 0 250px;
+            margin-right: 15px;
+            font-weight: 600;
+            color: #5a6268;
+            text-align: left;
+        }
+
+        .register-item input, .register-item .read-only-value {
+            flex-grow: 1;
+        }
+
+    .hmi-btn {
+        flex-grow: 1;
+        margin-top: 10px;
+        padding: 15px;
+        font-size: 1.1em;
+        font-weight: bold;
+        color: white;
+        border: 2px solid #343a40;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, visibility 0.3s ease;
+    }
+
+    .btn-green {
+        background-color: #28a745;
+    }
+
+    .btn-red {
+        background-color: #dc3545;
+    }
+
+    .btn-blue {
+        background-color: #007bff;
+    }
+
+    .main-button-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+</style>
+
+<div class="container text-center">
+    <a id="btn-pop" style="cursor:pointer;"><h1>@Localizer["Point Table 4"]</h1></a>
+    @Html.AntiForgeryToken()
+
+    <div class="status-message" id="connectionStatus">Disconnected</div>
+    <div class="error-message" id="errorMessage" style="display: none;"></div>
+
+    <div class="main-button-container">
+        <button class="hmi-btn hmi-interactive-btn btn-green" id="btn-save">@Localizer["SAVE"]</button>
+    </div>
+
+    <div id="saveModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>@Localizer["TOLERANCE"]</h2>
+            <div class="register-item"><input type="number" id="SetTolerance" /></div>
+            <div class="modal-actions">
+                <button id="backBtn" class="hmi-btn btn-red">@Localizer["BACK"]</button>
+            </div>
+        </div>
+    </div>
+
+    <partial name="Shared/_PointTablePartial" model="Model" />
+
+    <div class="write-status" id="writeStatusMessage"></div>
+
+    <div style="margin-top: 20px;">
+        <div class="register-item"><label for="MaxForwardTorque">@Localizer["MAX FORWARD TORQUE (%):"]</label><input type="number" id="MaxForwardTorque" /></div>
+        <div class="register-item"><label for="MaxReverseTorque">@Localizer["MAX REVERSE TORQUE (%):"]</label><input type="number" id="MaxReverseTorque" /></div>
+    </div>
+
+    <div class="main-button-container">
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-home">@Localizer["HOME"]</button>
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-alm">@Localizer["ALARM"]</button>
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-prev">@Localizer["PREV"]</button>
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-next">@Localizer["NEXT"]</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/js/plc-signalr.js"></script>
+
+    <script>
+        const writeStatusMessageDiv = document.getElementById('writeStatusMessage');
+        let registerValues = { PointControlRegister: 0 };
+        const fieldsToDivideBy10 = [
+            "PositionWrite1", "PositionWrite2", "PositionWrite3",
+            "PositionRead1", "PositionRead2", "PositionRead3"
+        ];
+
+        const buttonConfig = {
+            'btn-save': { actions: [{ type: 'toggle', register: 'PointControlRegister', position: 0 }] },
+            'btn-home': { actions: [], redirect: '/Index' },
+            'btn-alm':  { actions: [], redirect: '/Alarms' },
+            'btn-prev': { actions: [], redirect: '/PointTable3' },
+            'btn-next': { actions: [], redirect: '/PointTable1' } // Cycle back to 1
+        };
+
+        const allRegisterIds = @Html.Raw(Json.Serialize(Model.GetType().GetProperties().Where(p => p.IsDefined(typeof(Microsoft.AspNetCore.Mvc.BindPropertyAttribute), false) && p.Name != "ConnectionStatus" && p.Name != "ErrorMessage").Select(p => p.Name)));
+
+        document.addEventListener('DOMContentLoaded', () => {
+              setTimeout(() => {
+            if (typeof startSignalR === 'function') startSignalR("PointTable4");
+        }, 500);
+
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+                });
+                input.addEventListener('change', (e) => {
+                    writeRegister(input.id, input.value);
+                });
+            });
+
+            document.querySelectorAll('.hmi-interactive-btn').forEach(btn => {
+                const cfg = buttonConfig[btn.id];
+                if (!cfg) return;
+                btn.addEventListener('click', async () => {
+                    try {
+                        if (cfg.actions) await performActionsAndAwait(cfg.actions);
+                        if (cfg.redirect) window.location.href = cfg.redirect;
+                    } catch (e) { console.error("Action error:", e); }
+                });
+            });
+        });
+
+        window.onPlcUpdate = function(data) {
+            const statusDiv = document.getElementById('connectionStatus');
+            if(statusDiv) {
+                statusDiv.textContent = "Connected (Live)";
+                statusDiv.className = "status-message status-connected";
+            }
+            for (const [key, value] of Object.entries(data)) {
+                registerValues[key] = value;
+                const el = document.getElementById(key);
+                if (el) {
+                    if (el.tagName === "INPUT" && document.activeElement === el) continue;
+                    let displayVal = value;
+                    if (fieldsToDivideBy10.some(f => key.includes(f) || key === f)) {
+                        if(!isNaN(value)) displayVal = (value / 440.0).toFixed(1);
+                    }
+                    if (el.tagName === "INPUT") el.value = displayVal;
+                    else el.textContent = displayVal;
+                }
+            }
+        };
+
+        async function performActionsAndAwait(actions) {
+            const registersToUpdate = new Map();
+            for (const a of actions) {
+                if (a.type === 'momentary') continue;
+                const reg = a.register;
+                let current = registersToUpdate.has(reg) ? registersToUpdate.get(reg) : (registerValues[reg] || 0);
+                if (a.type === 'toggle') current ^= (1 << a.position);
+                else if (a.type === 'set') current |= (1 << a.position);
+                else if (a.type === 'reset') current &= ~(1 << a.position);
+                registersToUpdate.set(reg, current);
+            }
+            const writes = [];
+            for (const [reg, val] of registersToUpdate) writes.push(writeRegister(reg, val.toString()));
+            return Promise.all(writes);
+        }
+
+        async function writeRegister(name, value) {
+            if(writeStatusMessageDiv) {
+                writeStatusMessageDiv.textContent = `Sending...`;
+                writeStatusMessageDiv.className = 'write-status';
+            }
+            let valToSend = value;
+            if (fieldsToDivideBy10.includes(name)) {
+                const f = parseFloat(value);
+                if (!isNaN(f)) valToSend = Math.round(f * 440).toString();
+                else return;
+            }
+            try {
+                const res = await fetch(`?handler=WriteRegister`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ RegisterName: name, Value: valToSend })
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const j = await res.json();
+                if(writeStatusMessageDiv) {
+                    writeStatusMessageDiv.textContent = j.message;
+                    writeStatusMessageDiv.className = `write-status ${j.status.toLowerCase()}`;
+                }
+            } catch (e) {
+                if(writeStatusMessageDiv) {
+                    writeStatusMessageDiv.textContent = `Write error: ${e.message}`;
+                    writeStatusMessageDiv.className = 'write-status error';
+                }
+            }
+        }
+
+        const saveModal = document.getElementById('saveModal');
+        const popButton = document.getElementById('btn-pop');
+        const backBtn = document.getElementById('backBtn');
+        const closeBtn = saveModal.querySelector('.close-button');
+        const openSaveModal = () => saveModal.style.display = 'flex';
+        const closeSaveModal = () => saveModal.style.display = 'none';
+        if(popButton) popButton.onclick = openSaveModal;
+        if(backBtn) backBtn.onclick = closeSaveModal;
+        if(closeBtn) closeBtn.onclick = closeSaveModal;
+        window.addEventListener('click', (e) => { if (e.target == saveModal) closeSaveModal(); });
+    </script>
+}

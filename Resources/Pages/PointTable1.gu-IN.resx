@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+		<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+		<xsd:element name="root" msdata:IsDataSet="true">
+			<xsd:complexType>
+				<xsd:choice maxOccurs="unbounded">
+					<xsd:element name="metadata">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" />
+							</xsd:sequence>
+							<xsd:attribute name="name" use="required" type="xsd:string" />
+							<xsd:attribute name="type" type="xsd:string" />
+							<xsd:attribute name="mimetype" type="xsd:string" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="assembly">
+						<xsd:complexType>
+							<xsd:attribute name="alias" type="xsd:string" />
+							<xsd:attribute name="name" type="xsd:string" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="data">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="resheader">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" />
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:complexType>
+		</xsd:element>
+	</xsd:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+
+	<data name="Point Table 1" xml:space="preserve">
+    <value>પોઈન્ટ ટેબલ 1</value>
+  </data>
+	<data name="SAVE" xml:space="preserve">
+    <value>સેવ</value>
+  </data>
+	<data name="TOLERANCE" xml:space="preserve">
+    <value>ટોલરન્સ</value>
+  </data>
+	<data name="BACK" xml:space="preserve">
+    <value>પાછા</value>
+  </data>
+	<data name="WRITE 1" xml:space="preserve">
+    <value>રાઈટ 1</value>
+  </data>
+	<data name="WRITE 2" xml:space="preserve">
+    <value>રાઈટ 2</value>
+  </data>
+	<data name="WRITE 3" xml:space="preserve">
+    <value>રાઈટ 3</value>
+  </data>
+	<data name="READ 1" xml:space="preserve">
+    <value>રીડ 1</value>
+  </data>
+	<data name="READ 2" xml:space="preserve">
+    <value>રીડ 2</value>
+  </data>
+	<data name="READ 3" xml:space="preserve">
+    <value>રીડ 3</value>
+  </data>
+	<data name="POSITION" xml:space="preserve">
+    <value>પોઝિશન</value>
+  </data>
+	<data name="SPEED" xml:space="preserve">
+    <value>સ્પીડ</value>
+  </data>
+	<data name="ACC" xml:space="preserve">
+    <value>પ્રવેગ</value>
+  </data>
+	<data name="DECC" xml:space="preserve">
+    <value>મંદન</value>
+  </data>
+	<data name="DWELL TIME" xml:space="preserve">
+    <value>ડવેલ સમય</value>
+  </data>
+	<data name="AUX. FUN." xml:space="preserve">
+    <value>ઓક્સ. ફંક્શન</value>
+  </data>
+	<data name="M - CODE" xml:space="preserve">
+    <value>M - કોડ</value>
+  </data>
+	<data name="MAX FORWARD TORQUE (%):" xml:space="preserve">
+    <value>મહત્તમ ફોરવર્ડ ટોર્ક (%):</value>
+  </data>
+	<data name="MAX REVERSE TORQUE (%):" xml:space="preserve">
+    <value>મહત્તમ રિવર્સ ટોર્ક (%):</value>
+  </data>
+	<data name="HOME" xml:space="preserve">
+    <value>હોમ</value>
+  </data>
+	<data name="ALARM" xml:space="preserve">
+    <value>અલાર્મ</value>
+  </data>
+	<data name="NEXT" xml:space="preserve">
+    <value>આગળ</value>
+  </data>
+</root>

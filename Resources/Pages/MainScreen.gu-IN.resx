@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+		<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+		<xsd:element name="root" msdata:IsDataSet="true">
+			<xsd:complexType>
+				<xsd:choice maxOccurs="unbounded">
+					<xsd:element name="metadata">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" />
+							</xsd:sequence>
+							<xsd:attribute name="name" use="required" type="xsd:string" />
+							<xsd:attribute name="type" type="xsd:string" />
+							<xsd:attribute name="mimetype" type="xsd:string" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="assembly">
+						<xsd:complexType>
+							<xsd:attribute name="alias" type="xsd:string" />
+							<xsd:attribute name="name" type="xsd:string" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="data">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="resheader">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" />
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:complexType>
+		</xsd:element>
+	</xsd:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+
+	<data name="Main Screen" xml:space="preserve">
+    <value>મુખ્ય સ્ક્રીન</value>
+  </data>
+	<data name="MAX FORWARD TORQUE (%):" xml:space="preserve">
+    <value>મહત્તમ ફોરવર્ડ ટોર્ક (%):</value>
+  </data>
+	<data name="MAX REVERSE TORQUE (%):" xml:space="preserve">
+    <value>મહત્તમ રિવર્સ ટોર્ક (%):</value>
+  </data>
+	<data name="SERVO ERROR:" xml:space="preserve">
+    <value>સર્વો એરર:</value>
+  </data>
+	<data name="CONT OFF TIME:" xml:space="preserve">
+    <value>સતત બંધ સમય:</value>
+  </data>
+	<data name="INSTANT. TORQUE (%):" xml:space="preserve">
+    <value>ઇન્સ્ટન્ટ ટોર્ક (%):</value>
+  </data>
+	<data name="TOTAL TRAVEL LENGTH (mm):" xml:space="preserve">
+    <value>કુલ મુસાફરી લંબાઈ (mm):</value>
+  </data>
+	<data name="CURRENT POSITION (mm):" xml:space="preserve">
+    <value>વર્તમાન પોઝિશન (mm):</value>
+  </data>
+	<data name="POSITION AT EMG. (mm):" xml:space="preserve">
+    <value>ઇમરજન્સી પોઝિશન (mm):</value>
+  </data>
+	<data name="BREAKER TYPE SELECTION" xml:space="preserve">
+    <value>બ્રેકર પ્રકાર પસંદગી</value>
+  </data>
+	<data name="IN START" xml:space="preserve">
+    <value>અંદર શરૂ કરો</value>
+  </data>
+	<data name="OUT START" xml:space="preserve">
+    <value>બહાર શરૂ કરો</value>
+  </data>
+	<data name="EMERGENCY" xml:space="preserve">
+    <value>ઇમરજન્સી</value>
+  </data>
+	<data name="RACKING IN:" xml:space="preserve">
+    <value>રેકિંગ ઇન:</value>
+  </data>
+	<data name="RACKING OUT:" xml:space="preserve">
+    <value>રેકિંગ આઉટ:</value>
+  </data>
+	<data name="HOME" xml:space="preserve">
+    <value>હોમ</value>
+  </data>
+	<data name="EMG RACK" xml:space="preserve">
+    <value>ઇમરજન્સી રેક</value>
+  </data>
+	<data name="POINT TABLE" xml:space="preserve">
+    <value>પોઈન્ટ ટેબલ</value>
+  </data>
+</root>

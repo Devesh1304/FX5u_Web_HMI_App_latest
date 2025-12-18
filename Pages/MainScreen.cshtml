@@ -1,0 +1,599 @@
+﻿@page
+@model FX5u_Web_HMI_App.Pages.MainScreenModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Main Screen"];
+}
+
+<style>
+    /* --- MAIN CONTAINER --- */
+    .container {
+        background-color: #ffffff;
+        padding: 24px 28px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 900px;
+        text-align: center;
+        margin: 20px auto;
+    }
+
+    h1 { color: #007bff; margin-bottom: 15px; }
+
+    /* --- DASHBOARD LIST (Fixed "Scattered" Issue) --- */
+    .register-list {
+        margin-top: 10px;
+        text-align: left;
+    }
+
+    .register-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between; /* Keeps Label Left, Value Right */
+        margin-bottom: 10px;
+        padding: 5px 0;
+    }
+
+    .register-item label {
+        font-weight: 600;
+        color: #5a6268;
+        text-align: left;
+        flex: 1; 
+        margin-right: 15px;
+    }
+
+    .read-only-value, input[type="number"] {
+        font-weight: bold;
+        color: #0056b3;
+        text-align: right;
+        min-width: 100px; /* Ensures values align nicely */
+        font-size: 1.05em;
+    }
+
+    input[type="number"] {
+        padding: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        width: 120px; /* Specific width for inputs */
+    }
+
+    /* --- ZONES & LAMPS --- */
+    .zone { margin-top: 25px; text-align: left; }
+    .zone h3 { 
+        font-size: 1.3em; 
+        color: #495057; 
+        margin-bottom: 15px; 
+        border-bottom: 2px solid #dee2e6; 
+        padding-bottom: 5px; 
+    }
+    
+    .zone-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* 2x2 Layout for Lamps */
+        gap: 10px;
+    }
+
+    .hmi-lamp {
+        padding: 15px;
+        font-size: 1.1em;
+        font-weight: bold;
+        color: #ffffff;
+        border: 2px solid #343a40;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 52px;
+        background-color: #dc3545; /* Default Red */
+        box-shadow: 0 2px 6px rgba(0,0,0,.08);
+    }
+    .hmi-lamp.on { background-color: #28a745; }
+
+    /* --- BUTTONS (Restored Your Original Spacing) --- */
+    .button-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* RESTORED: 4 Columns */
+        grid-template-rows: repeat(2, 1fr);    /* RESTORED: 2 Rows */
+        gap: 10px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .main-button-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* RESTORED: 3 Columns */
+        gap: 10px;
+    }
+
+    .hmi-btn {
+        flex-grow: 1;
+        padding: 15px;
+        font-size: 1.1em;
+        font-weight: bold;
+        color: white;
+        border: 2px solid #343a40;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-green { background-color: #28a745; }
+    .btn-red { background-color: #dc3545; }
+    .btn-blue { background-color: #007bff; }
+
+    /* --- BAR GRAPHS --- */
+    .bar-graph-container { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
+    .bar-graph-label { font-weight: 600; color: #343a40; width: 235px; text-align: left; }
+    .bar-graph-track { flex-grow: 1; height: 30px; background-color: #e9ecef; border: 1px solid #ced4da; border-radius: 5px; position: relative; overflow: hidden; }
+    .bar-graph-fill { position: absolute; top: 0; left: 0; height: 100%; background-color: #28a745; transition: width 0.5s; }
+    .bar-graph-fill-right { position: absolute; top: 0; right: 0; height: 100%; background-color: #28a745; transition: width 0.5s; }
+    .bar-graph-value { font-weight: bold; width: 50px; text-align: right; }
+
+    /* --- STATUS MESSAGES --- */
+    .status-message { margin-top: 25px; padding: 12px; border-radius: 5px; font-weight: 500; border: 1px solid; }
+    .status-connected { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+    .status-disconnected { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+    .write-status { margin-top: 15px; padding: 10px; border-radius: 5px; font-weight: 500; text-align: left; min-height: 1.5em; }
+    .write-status.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .write-status.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+    /* --- MOBILE OVERRIDES --- */
+    @@media screen and (max-width: 768px) {
+        
+        /* 1. FORCE ROW LAYOUT for Dashboard Items (Fixes scattered look) */
+        .register-item {
+            flex-direction: row !important; 
+            align-items: center !important;
+        }
+
+        .register-item label {
+            margin-bottom: 0 !important;
+            width: auto !important;
+            font-size: 0.95em;
+            flex: 1;
+        }
+
+        .read-only-value, input[type="number"] {
+            width: 100px; /* Slightly smaller on mobile */
+        }
+
+        .container {
+            padding: 15px; 
+        }
+
+        /* 2. Responsive Grids for Small Screens */
+        /* Only switch to 2 columns if screen is very narrow, otherwise keep your look */
+        .button-grid {
+            grid-template-columns: repeat(2, 1fr); /* 2x2 on mobile looks cleaner than 4 cramped cols */
+        }
+        
+        .main-button-container {
+            grid-template-columns: repeat(3, 1fr); /* Keep 3 cols for footer buttons if they fit, or switch to 1 */
+        }
+        
+        /* If screen is TINY (Phone), stack footer buttons */
+        @@media screen and (max-width: 480px) {
+            .main-button-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    }
+</style>
+
+<div class="container text-center">
+    <h1>@Localizer["Main Screen"]</h1>
+
+    @Html.AntiForgeryToken()
+
+    <div class="status-message" id="connectionStatus"></div>
+    <div class="error-message" id="errorMessage" style="display: none;"></div>
+
+    <div class="register-list">
+        <div class="register-item"><label>@Localizer["MAX FORWARD TORQUE (%):"]</label><span class="read-only-value" id="MaxForwardTorque"></span></div>
+        <div class="register-item"><label>@Localizer["MAX REVERSE TORQUE (%):"]</label><span class="read-only-value" id="MaxReverseTorque"></span></div>
+        <div class="register-item"><label>@Localizer["SERVO ERROR:"]</label><span class="read-only-value" id="ServoError"></span></div>
+        <div class="register-item"><label for="ContOffTime">@Localizer["CONT OFF TIME:"]</label><input type="number" id="ContOffTime" /></div>
+        <div class="register-item"><label>@Localizer["INSTANT. TORQUE (%):"]</label><span class="read-only-value" id="InstantTorque"></span></div>
+        <div class="register-item"><label>@Localizer["TOTAL TRAVEL LENGTH (mm):"]</label><span class="read-only-value" id="TotalTravelLength"></span></div>
+        <div class="register-item"><label>@Localizer["CURRENT POSITION (mm):"]</label><span class="read-only-value" id="CurrentPosition"></span></div>
+        <div class="register-item"><label>@Localizer["POSITION AT EMG. (mm):"]</label><span class="read-only-value" id="PositionAtEmergency"></span></div>
+    </div>
+
+    <div class="zone">
+        <h3>@Localizer["BREAKER TYPE SELECTION"]</h3>
+        <div class="zone-grid-4">
+            <div class="hmi-lamp" id="btn-abb-vd4"><span id="BreakerTypeName1"></span></div>
+            <div class="hmi-lamp" id="btn-abb"><span id="BreakerTypeName2"></span></div>
+            <div class="hmi-lamp" id="btn-spare3"><span id="BreakerTypeName3"></span></div>
+            <div class="hmi-lamp" id="btn-spare4"><span id="BreakerTypeName4"></span></div>
+        </div>
+    </div>
+
+    <div class="button-grid">
+        <button class="hmi-btn hmi-interactive-btn" id="btn-in-start">@Localizer["IN START"]</button>
+        <button class="hmi-btn hmi-interactive-btn" id="btn-out-start">@Localizer["OUT START"]</button>
+        <button class="hmi-btn hmi-interactive-btn" id="btn-emg">@Localizer["EMERGENCY"]</button>
+    </div>
+
+    <div class="bar-graph-container" id="rackingInContainer">
+        <span class="bar-graph-label">@Localizer["RACKING IN:"]</span>
+        <div class="bar-graph-track"><div class="bar-graph-fill" id="rackingInBar"></div></div>
+        <span class="bar-graph-value" id="rackingInValue">%</span>
+    </div>
+    <div class="bar-graph-container" id="rackingOutContainer">
+        <span class="bar-graph-label">@Localizer["RACKING OUT:"]</span>
+        <div class="bar-graph-track"><div class="bar-graph-fill-right" id="rackingOutBar"></div></div>
+        <span class="bar-graph-value" id="rackingOutValue">%</span>
+    </div>
+
+    <div class="write-status" id="writeStatusMessage"></div>
+
+    <div class="main-button-container">
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-home">@Localizer["HOME"]</button>
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-emg-rack">@Localizer["EMG RACK"]</button>
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-point-table">@Localizer["POINT TABLE"]</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const writeStatusMessageDiv = document.getElementById('writeStatusMessage');
+        const langSelect = document.getElementById('langSelect'); // From Layout
+
+        // ========= YOUR EXISTING R/W MAPPINGS =========
+        const writableRegisterIds = ["ContOffTime"];
+        const readOnlyRegisterIds = [
+            "MaxForwardTorque","MaxReverseTorque","ServoError",
+            "InstantTorque","TotalTravelLength","CurrentPosition","PositionAtEmergency",
+            "BreakerTypeName1","BreakerTypeName2","BreakerTypeName3","BreakerTypeName4"
+        ];
+        const fieldsToDivideBy10 = ["TotalTravelLength","CurrentPosition","PositionAtEmergency"];
+        const fieldsToDivideBy10timer = ["ContOffTime"];
+
+        let registerValues = {
+            D1001: 0, D1002: 0, D100: 0, D2: 0, D3: 0, D4: 0, D1402: 0, D90: 0
+        };
+
+        // ========= BUTTON CONFIG (UNCHANGED) =========
+        const buttonConfig = {
+            'btn-abb-vd4': { actions: [], statusBit: { register: 'D1001', position: 0 }, visibilityBit: { register: 'D1001', position: 0 }, inverseVisiblity: 'yes' },
+            'btn-abb':     { actions: [], statusBit: { register: 'D1001', position: 1 }, visibilityBit: { register: 'D1001', position: 1 }, inverseVisiblity: 'yes' },
+            'btn-spare3':  { actions: [], statusBit: { register: 'D1001', position: 2 }, visibilityBit: { register: 'D1001', position: 2 }, inverseVisiblity: 'yes' },
+            'btn-spare4':  { actions: [], statusBit: { register: 'D1001', position: 3 }, visibilityBit: { register: 'D1001', position: 3 }, inverseVisiblity: 'yes' },
+
+            'btn-in-start':  { actions: [ { type:'toggle', register:'D1402', position:0 }, { type:'set', register:'D4', position:0 } ], visibilityBit:{ register:'D1001', position:6 }, conditionBit:{ register:'D4', position:0 }, inverseVisiblity:'yes' },
+            'btn-out-start': { actions: [ { type:'toggle', register:'D1402', position:1 }, { type:'set', register:'D4', position:1 } ], visibilityBit:{ register:'D1001', position:5 }, conditionBit:{ register:'D4', position:1 }, inverseVisiblity:'yes' },
+
+            'btn-emg': { actions: [
+                    { type:'toggle', register:'D1002', position:0 },
+                    { type:'reset', register:'D1001', position:0 },
+                    { type:'reset', register:'D1001', position:1 },
+                    { type:'reset', register:'D1001', position:2 },
+                    { type:'reset', register:'D1001', position:3 },
+                    { type:'reset', register:'D1001', position:4 },
+                    { type:'reset', register:'D1001', position:7 },
+                    { type:'reset', register:'D1402', position:0 },
+                    { type:'reset', register:'D1402', position:1 },
+                    { type:'reset', register:'D1402', position:2 },
+                    { type:'reset', register:'D1402', position:3 },
+                    { type:'reset', register:'D1402', position:4 },
+                    { type:'reset', register:'D4', position:0 },
+                    { type:'reset', register:'D4', position:1 },
+                    { type:'reset', register:'D100', position:5 }
+                ],
+                momentarySideEffect: { address:'M501' }
+            },
+
+            'btn-emg-rack': {
+                actions: [
+                    { type:'toggle', register:'D3', position:1 },
+                    { type:'reset', register:'D1402', position:4 },
+                    { type:'reset', register:'D1402', position:1 },
+                    { type:'reset', register:'D1001', position:7 },
+                    { type:'set', register:'D90', position:0 },
+                    { type:'set', register:'D1001', position:4 }
+                ],
+                conditionBit: { register:'D1002', position:0 },
+                redirect:'/HomePointTable'
+            },
+
+            'btn-home': {
+                actions: [
+                    { type:'toggle', register:'D2', position:8 },
+                    { type:'reset', register:'D1001', position:0 },
+                    { type:'reset', register:'D1001', position:1 },
+                    { type:'reset', register:'D1001', position:2 },
+                    { type:'reset', register:'D1001', position:3 },
+                    { type:'reset', register:'D1001', position:5 },
+                    { type:'reset', register:'D1001', position:6 },
+                    { type:'reset', register:'D1001', position:7 },
+                    { type:'reset', register:'D2', position:3 },
+                    { type:'reset', register:'D2', position:4 },
+                    { type:'reset', register:'D2', position:5 },
+                    { type:'reset', register:'D2', position:6 },
+                    { type:'reset', register:'D2', position:7 },
+                    { type:'reset', register:'D3', position:6 },
+                    { type:'reset', register:'D3', position:5 },
+                    { type:'reset', register:'D4', position:0 },
+                    { type:'reset', register:'D4', position:1 }
+                ],
+                momentarySideEffect: { address:'M501' },
+                redirect:'/Index'
+            },
+
+            'btn-point-table': { actions: [], redirect:'/PointTable1' }
+        };
+
+        // ========= LANGUAGE: fetch PLC EN or DB GU =========
+        async function refreshBreakerNames() {
+            try {
+                // Fix: Correct check for 'gu-IN'
+                const currentLang = (langSelect && langSelect.value.indexOf('gu') !== -1) ? 'gu' : 'en';
+
+                const handler = (currentLang === 'gu')
+                    ? 'ReadBreakerTypesLocalized&lang=gu'
+                    : 'ReadBreakerTypes';
+
+                const res = await fetch(`?handler=${handler}`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const j = await res.json();
+                if (!j.success) return;
+
+                const n = j.names || [];
+                document.getElementById('BreakerTypeName1').textContent = n[0] || '';
+                document.getElementById('BreakerTypeName2').textContent = n[1] || '';
+                document.getElementById('BreakerTypeName3').textContent = n[2] || '';
+                document.getElementById('BreakerTypeName4').textContent = n[3] || '';
+            } catch(e) { console.error(e); }
+        }
+
+        // ========= BUTTON HELPERS =========
+        async function performActionsAndAwait(actions) {
+            const pending = new Map();
+            for (const a of actions) {
+                if (a.type === 'momentary') continue;
+                const reg = a.register;
+                let v = pending.has(reg) ? pending.get(reg) : registerValues[reg];
+                if (a.type === 'toggle') v ^= (1 << a.position);
+                else if (a.type === 'set') v |= (1 << a.position);
+                else if (a.type === 'reset') v &= ~(1 << a.position);
+                pending.set(reg, v);
+            }
+            const writes = [];
+            for (const [reg, val] of pending) writes.push(writeRegister(reg, String(val)));
+            return Promise.all(writes);
+        }
+
+        function updateButtonStyles() {
+            for (const id in buttonConfig) {
+                const cfg = buttonConfig[id];
+                const el = document.getElementById(id);
+                if (!el) continue;
+
+                if (cfg.statusBit) {
+                    const on = (registerValues[cfg.statusBit.register] >> cfg.statusBit.position) & 1;
+                    el.classList.toggle('btn-green', !!on);
+                    el.classList.toggle('btn-red', !on);
+                } else if (cfg.actions && cfg.actions.length > 0) {
+                    const a = cfg.actions.find(x => x.type === 'toggle' || x.type === 'momentary');
+                    if (a) {
+                        const on = (registerValues[a.register] >> a.position) & 1;
+                        el.classList.toggle('btn-green', !!on);
+                        el.classList.toggle('btn-red', !on);
+                    } else {
+                        el.classList.remove('btn-green'); el.classList.add('btn-red');
+                    }
+                }
+
+                if (cfg.visibilityBit) {
+                    const vis = (registerValues[cfg.visibilityBit.register] >> cfg.visibilityBit.position) & 1;
+                    el.style.visibility = vis ? 'visible' : 'hidden';
+                }
+            }
+        }
+
+        function updateUI(data) {
+            const statusDiv = document.getElementById('connectionStatus');
+            const errorDiv = document.getElementById('errorMessage');
+
+            statusDiv.className = `status-message ${data.connectionStatus?.includes('Connected') ? 'status-connected' : 'status-disconnected'}`;
+            errorDiv.style.display = data.errorMessage ? 'block' : 'none';
+            errorDiv.innerHTML = data.errorMessage ? `<strong>Error:</strong> ${data.errorMessage}` : '';
+            statusDiv.textContent = `Connection Status: ${data.connectionStatus}`;
+
+            // Writable field (ContOffTime) formatting
+            const cont = document.getElementById('ContOffTime');
+            if (cont && document.activeElement !== cont && data.contOffTime !== undefined) {
+                cont.value = (fieldsToDivideBy10timer.includes('ContOffTime'))
+                    ? (Number(data.contOffTime) / 10).toFixed(1)
+                    : data.contOffTime;
+            }
+
+            // Read-only values
+            readOnlyRegisterIds.forEach(id => {
+                const el = document.getElementById(id);
+                const key = id.charAt(0).toLowerCase() + id.slice(1);
+                if (!el || data[key] === undefined) return;
+
+                // Fix: Prevent flickering by checking for Gujarati
+                const isBreaker = id.startsWith("BreakerTypeName");
+                if (isBreaker && langSelect && langSelect.value.indexOf('gu') !== -1) return;
+
+                if (fieldsToDivideBy10.includes(id)) el.textContent = (Number(data[key]) / 440.0).toFixed(1);
+                else el.textContent = data[key];
+            });
+
+            // Bars, visibility tied to D1001 bits
+            if (data.d1001 !== undefined) {
+                const showInBar = (data.d1001 >> 6) & 1;
+                const showOutBar = (data.d1001 >> 5) & 1;
+                document.getElementById('rackingInContainer').style.display = showInBar ? 'flex' : 'none';
+                document.getElementById('rackingOutContainer').style.display = showOutBar ? 'flex' : 'none';
+            }
+            if (data.rackingInValue !== undefined) {
+                document.getElementById('rackingInBar').style.width = (data.rackingInValue / 440).toFixed(1) + '%';
+                document.getElementById('rackingInValue').textContent = (data.rackingInValue / 440).toFixed(1) + '%';
+            }
+            if (data.rackingOutValue !== undefined) {
+                document.getElementById('rackingOutBar').style.width = (data.rackingOutValue / 440).toFixed(1) + '%';
+                document.getElementById('rackingOutValue').textContent = (data.rackingOutValue / 440).toFixed(1) + '%';
+            }
+
+            // Cache words for bit math
+            for (const k in registerValues) {
+                const dk = k.charAt(0).toLowerCase() + k.slice(1);
+                if (data[dk] !== undefined) registerValues[k] = data[dk];
+            }
+            updateButtonStyles();
+        }
+
+        async function fetchModbusData() {
+            try {
+                const r = await fetch('?handler=ReadRegisters');
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                const j = await r.json();
+                updateUI(j);
+            } catch (e) {
+                updateUI({ connectionStatus: "Fetch Error", errorMessage: e.message });
+            }
+        }
+
+        async function writeRegister(name, value) {
+            writeStatusMessageDiv.textContent = `Sending new value for ${name}...`;
+            writeStatusMessageDiv.className = 'write-status';
+            try {
+                const body = JSON.stringify({ RegisterName: name, Value: value });
+                const res = await fetch(`?handler=WriteRegister`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const j = await res.json();
+                writeStatusMessageDiv.textContent = j.message;
+                writeStatusMessageDiv.className = `write-status ${j.status?.toLowerCase()}`;
+                await fetchModbusData();
+            } catch (e) {
+                writeStatusMessageDiv.textContent = `Write failed: ${e.message}`;
+                writeStatusMessageDiv.className = 'write-status error';
+            }
+        }
+
+        async function writeBit(address, value) {
+            try {
+                await fetch(`?handler=WriteBit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ Address: address, Value: value })
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        // Wire events
+        document.addEventListener('DOMContentLoaded', () => {
+            // Writable input Enter-to-write
+            writableRegisterIds.forEach(id => {
+                const input = document.getElementById(id);
+                if (!input) return;
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+
+                    }
+                });
+                input.addEventListener('change', () => {
+                writeRegister(id, input.value);
+                  let val = input.value;
+                  if (fieldsToDivideBy10timer.includes(id)) {
+                  const fv = parseFloat(val);
+                  if (!isNaN(fv)) val = String(Math.round(fv * 10));
+                  }
+                  writeRegister(id, val);
+                });
+            });
+
+            // Button behaviors
+            document.querySelectorAll('.hmi-interactive-btn').forEach(btn => {
+                const cfg = buttonConfig[btn.id];
+                if (!cfg) return;
+
+                const isMomentary = cfg.actions?.some(a => a.type === 'momentary');
+                if (isMomentary) {
+                    const a = cfg.actions.find(x => x.type === 'momentary');
+                    const press = async () => {
+                        if (cfg.conditionBit) {
+                            const cond = (registerValues[cfg.conditionBit.register] >> cfg.conditionBit.position) & 1;
+                            const blocked = (cfg.conditionBehavior === 'allowOnHigh') ? !cond : !!cond;
+                            if (blocked) return;
+                        }
+                        let newVal = registerValues[a.register] | (1 << a.position);
+                        await writeRegister(a.register, String(newVal));
+                        await fetchModbusData();
+                    };
+                    const release = async () => {
+                        const a2 = cfg.actions.find(x => x.type === 'momentary');
+                        let newVal = registerValues[a2.register] & ~(1 << a2.position);
+                        await writeRegister(a2.register, String(newVal));
+                        await fetchModbusData();
+                    };
+                    btn.addEventListener('mousedown', press);
+                    btn.addEventListener('mouseup', release);
+                    btn.addEventListener('mouseleave', release);
+                    btn.addEventListener('touchstart', e => { e.preventDefault(); press(); });
+                    btn.addEventListener('touchend',   e => { e.preventDefault(); release(); });
+                } else {
+                    btn.addEventListener('click', async () => {
+                        if (cfg.conditionBit) {
+                            const cond = (registerValues[cfg.conditionBit.register] >> cfg.conditionBit.position) & 1;
+                            const blocked = (cfg.conditionBehavior === 'allowOnHigh') ? !cond : !!cond;
+                            if (blocked) return;
+                        }
+                        await performActionsAndAwait(cfg.actions || []);
+                        await fetchModbusData();
+                        if (cfg.redirect) window.location.href = cfg.redirect;
+                    });
+                }
+
+        if (cfg.momentarySideEffect) {
+            const addr = cfg.momentarySideEffect.address;
+
+            // Define simple async functions
+            const press = async () => { await writeBit(addr, true); };
+            const release = async () => { await writeBit(addr, false); };
+
+            // Mouse events (Removed fetchModbusData to prevent lag)
+            btn.addEventListener('mousedown', press);
+            btn.addEventListener('mouseup',   release);
+            btn.addEventListener('mouseleave', release);
+
+            // Touch events (Removed e.preventDefault so navigation works!)
+            btn.addEventListener('touchstart', press);
+            btn.addEventListener('touchend',   release);
+        }
+            });
+
+            // Timers
+            fetchModbusData();
+            refreshBreakerNames();
+            setInterval(fetchModbusData, 1000);
+            setInterval(refreshBreakerNames, 2000);
+
+            if (langSelect) {
+                langSelect.addEventListener('change', () => {
+                    try { localStorage.setItem('hmi_lang', langSelect.value); } catch(e) { /* ignore */ }
+                    refreshBreakerNames();
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,290 @@
+﻿@page
+@model FX5u_Web_HMI_App.Pages.LogTableModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Data Log"];
+}
+
+<script>
+    (function(){
+        const url = new URL(window.location.href);
+        const hasInit = url.searchParams.has('tzinit');
+        const hasOffset = url.searchParams.has('ClientOffsetMinutes');
+
+        if (!hasInit || !hasOffset) {
+            // compute client offset (minutes to add to local to get UTC)
+            const off = new Date().getTimezoneOffset();
+            url.searchParams.set('ClientOffsetMinutes', off);
+
+            // if no explicit range provided, set last 24h
+            if (!url.searchParams.has('StartDate') || !url.searchParams.has('EndDate')) {
+                const now = new Date();
+                const start = new Date(now.getTime() - 24*60*60*1000);
+
+                const fmt = (d) => {
+                    const p = (n) => String(n).padStart(2,'0');
+                    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+                };
+                url.searchParams.set('StartDate', fmt(start));
+                url.searchParams.set('EndDate', fmt(now));
+            }
+
+            // Default Lang
+            if (!url.searchParams.has('Lang')) url.searchParams.set('Lang', 'en');
+
+            url.searchParams.set('CurrentPage', '1');
+            url.searchParams.set('tzinit', '1');
+
+            window.location.replace(url.toString());
+        }
+    })();
+</script>
+
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #e9ecef;
+        color: #343a40;
+        min-height: 100vh;
+        margin: 0;
+    }
+
+    .container {
+        background-color: #ffffff;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 1200px;
+        margin: 50px auto;
+        text-align: center;
+        position: relative;
+    }
+
+    h1 {
+        color: #007bff;
+        margin-bottom: 30px;
+    }
+
+    .filter-bar {
+        display: flex;
+        gap: 12px;
+        align-items: end;
+        justify-content: center;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+
+        .filter-bar label {
+            font-weight: 600;
+            color: #5a6268;
+        }
+
+        .filter-bar input[type="datetime-local"] {
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 6px 8px;
+        }
+
+    .filter-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .table-container {
+        margin-top: 10px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        max-height: 500px;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .data-table th, .data-table td {
+            border-bottom: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table td.empty-cell {
+            height: 46.5px;
+        }
+
+    .hmi-btn {
+        padding: 8px 16px;
+        font-size: 1.05em;
+        font-weight: 600;
+        color: white;
+        border: 2px solid #343a40;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-blue {
+        background-color: #007bff;
+    }
+
+    .btn-ghost {
+        background: #fff;
+        color: #343a40;
+        border-color: #ced4da;
+    }
+
+    .footer-nav {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #dee2e6;
+    }
+
+        .footer-nav .hmi-btn {
+            width: 250px;
+            margin: 0 auto;
+        }
+</style>
+
+<div class="container text-center">
+    @Html.AntiForgeryToken()
+    <h1>@Localizer["Historical Data Log"]</h1>
+
+    <form method="get" class="filter-bar" id="logFilterForm" onsubmit="return false;">
+        <div>
+            <label for="StartDate">@Localizer["Start Time:"]</label><br />
+            <input type="datetime-local" asp-for="StartDate" />
+        </div>
+        <div>
+            <label for="EndDate">@Localizer["End Time:"]</label><br />
+            <input type="datetime-local" asp-for="EndDate" />
+        </div>
+
+        <input type="hidden" asp-for="ClientOffsetMinutes" id="ClientOffsetMinutes" />
+
+        <div class="filter-actions">
+            <button type="button" class="hmi-btn btn-blue" id="btn-apply">@Localizer["Apply"]</button>
+            <button type="button" class="hmi-btn btn-ghost" id="btn-last1h">@Localizer["Last 1h"]</button>
+            <button type="button" class="hmi-btn btn-ghost" id="btn-last24h">@Localizer["Last 24h"]</button>
+            <button type="button" class="hmi-btn btn-ghost" id="btn-last7d">@Localizer["Last 7d"]</button>
+        </div>
+    </form>
+
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>@Localizer["Time (Local)"]</th>
+                    <th>@Localizer["Torque"]</th>
+                    <th>@Localizer["Position"]</th>
+                    <th>@Localizer["RPM"]</th>
+                    <th>@Localizer["Breaker No"]</th>
+                    <th>@Localizer["Breaker Description"]</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int rowCount = 0;
+                    if (Model.DataRows != null)
+                    {
+                        foreach (var row in Model.DataRows)
+                        {
+                            <tr>
+                                <td>@row.LocalTime</td>
+                                <td>@row.Torque</td>
+                                <td>@row.Position</td>
+                                <td>@row.RPM</td>
+                                <td>@row.BrakerNo</td>
+                                <td>@row.BreakerDescription</td>
+                            </tr>
+                            rowCount++;
+                        }
+                    }
+                    // Fill empty rows if needed
+                    for (int i = rowCount; i < Model.PageSize; i++)
+                    {
+                        <tr>
+                            <td class="empty-cell">&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer-nav">
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-home">@Localizer["HOME"]</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function(){
+            // Get Global Language Selector from Layout
+            const langSelect = document.getElementById('langSelect');
+            const startEl = document.querySelector('input[name="StartDate"]');
+            const endEl   = document.querySelector('input[name="EndDate"]');
+
+            function navigateWithParams() {
+                const params = new URLSearchParams(window.location.search);
+
+                if (startEl && startEl.value) params.set('StartDate', startEl.value);
+                if (endEl && endEl.value)     params.set('EndDate', endEl.value);
+
+                params.set('ClientOffsetMinutes', new Date().getTimezoneOffset());
+
+                // Use the global dropdown value if available
+                const selectedLang = langSelect ? langSelect.value : 'en';
+                // Normalize 'gu-IN' to 'gu' for the backend logic if desired, or pass raw
+                params.set('Lang', selectedLang.indexOf('gu') !== -1 ? 'gu' : 'en');
+
+                params.set('CurrentPage', '1');
+                params.set('tzinit', '1');
+
+                const url = window.location.pathname + '?' + params.toString();
+                window.location.assign(url);
+            }
+
+            document.getElementById('btn-apply')?.addEventListener('click', navigateWithParams);
+
+            function setRangeAndApply(hours) {
+                const now = new Date();
+                const start = new Date(now.getTime() - hours * 60 * 60 * 1000);
+                const fmt = (d) => {
+                    const p = (n) => String(n).padStart(2, '0');
+                    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
+                };
+                if (startEl) startEl.value = fmt(start);
+                if (endEl)   endEl.value   = fmt(now);
+                navigateWithParams();
+            }
+
+            document.getElementById('btn-last1h')?.addEventListener('click', () => setRangeAndApply(1));
+            document.getElementById('btn-last24h')?.addEventListener('click', () => setRangeAndApply(24));
+            document.getElementById('btn-last7d')?.addEventListener('click', () => setRangeAndApply(24*7));
+
+            // If user changes language in the global dropdown, reload table with new lang param
+            if (langSelect) {
+                langSelect.addEventListener('change', navigateWithParams);
+            }
+
+            document.getElementById('btn-home')?.addEventListener('click', () => { window.location.href = '/Index'; });
+        })();
+    </script>
+}

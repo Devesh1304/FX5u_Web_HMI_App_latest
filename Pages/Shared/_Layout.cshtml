@@ -1,0 +1,265 @@
+﻿@using Microsoft.AspNetCore.Localization
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    // 1. Detect current language so the dropdown shows the correct selection
+    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+    var currentCulture = requestCulture?.RequestCulture.UICulture.Name ?? "en-US";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - FX5U-HMI</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/FX5u_Web_HMI_App.styles.css" asp-append-version="true" />
+
+    
+
+    <style>
+        /* --- 1. GLOBAL BASE STYLES --- */
+        body {
+            /* Ensure Gujarati font is available globally */
+            font-family: 'Segoe UI', sans-serif;
+            overflow-x: hidden; /* Prevent horizontal scroll on body */
+        }
+
+        /* --- TOP BAR STYLES --- */
+    .top-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 60px;
+        background-color: #343a40; /* Dark Grey Bar */
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        z-index: 1030;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .brand-title a {
+        color: white;
+        text-decoration: none;
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    .language-switcher-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .language-switcher-container label {
+        margin-right: 10px;
+        font-weight: 500;
+        color: #f8f9fa;
+    }
+
+    /* Pushes the page content down so it starts below the 60px header */
+    .content-wrapper {
+        margin-top: 70px; 
+        padding-bottom: 20px;
+    }
+
+        /* Language Switcher Styling */
+        .language-switcher {
+            text-align: left;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+            .language-switcher label {
+                color: #333;
+                margin-right: 10px;
+                font-weight: bold;
+            }
+
+            .language-switcher select {
+                border-radius: 5px;
+                padding: 5px;
+                border: 1px solid #ced4da;
+                cursor: pointer;
+            }
+
+        /* --- 2. GLOBAL TOUCH OPTIMIZATION --- */
+        /* CRITICAL: Removes 300ms tap delay on all interactive elements for Mobile/Tablet */
+        .hmi-btn, .btn-select, input, select, button, a {
+            touch-action: manipulation;
+        }
+
+        /* =========================================
+                   RESPONSIVE MEDIA QUERIES
+                   ========================================= */
+
+        /* --- TABLETS (Portrait & Landscape) --- */
+        @@media screen and (max-width: 1024px) {
+            .container {
+                width: 95%;
+                max-width: 100%;
+                padding: 20px;
+                margin-top: 20px;
+            }
+            /* Make buttons larger for easier touch */
+            .hmi-btn {
+                padding: 18px;
+                font-size: 1.2em;
+            }
+        }
+
+        /* --- MOBILE DEVICES (Portrait) --- */
+        @@media screen and (max-width: 768px) {
+            /* 1. Stack Input Labels vertically for better use of space */
+            .register-item {
+                flex-direction: column;
+                align-items: stretch;
+                margin-bottom: 15px;
+            }
+
+                .register-item label {
+                    width: 100%;
+                    text-align: left;
+                    margin-bottom: 5px;
+                    flex: none; /* Disable fixed width from pages */
+                }
+
+                .register-item input {
+                    width: 100%;
+                }
+            /* 2. Force Grids to 2 Columns (instead of 3 or 4) */
+            /* This applies to all your button grids automatically */
+            .main-button-container,
+            .button-grid,
+            .zone-grid-4 {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 15px;
+            }
+            /* 3. Make Data Tables Scrollable Horizontally */
+            /* Prevents the table from breaking the layout on small screens */
+            .data-table {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+                white-space: nowrap; /* Keep rows together */
+            }
+            /* 4. Adjust Modals */
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+            /* 5. Header Adjustment */
+            h1 {
+                font-size: 1.75rem;
+                margin-bottom: 20px;
+            }
+        }
+
+        /* --- SMALL PHONES (Narrow Screens) --- */
+        @@media screen and (max-width: 480px) {
+            /* Force Single Column for Buttons on very small screens */
+            .main-button-container,
+            .button-grid {
+                grid-template-columns: 1fr !important;
+            }
+            /* Smaller Text for buttons to fit */
+            .hmi-btn {
+                font-size: 1rem;
+                padding: 12px;
+            }
+
+            .language-switcher {
+                justify-content: space-between;
+            }
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <header class="top-bar">
+        <div class="brand-title">
+            <a href="/Index">FX5U HMI SYSTEM</a>
+        </div>
+
+        <div class="language-switcher-container">
+            <label for="langSelect">@Localizer["Language"]:</label>
+            <select id="langSelect" onchange="setLanguage(this.value)">
+                <!option value="en-US" @(currentCulture == "en-US" ? "selected" : "")>English</!option>
+                <!option value="gu-IN" @(currentCulture == "gu-IN" ? "selected" : "")>ગુજરાતી</!option>
+            </select>
+        </div>
+    </header>
+
+    <main class="container-fluid content-wrapper" role="main">
+        @RenderBody()
+    </main>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/js/plc-signalr.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        // Global Language Logic
+        function setLanguage(culture) {
+            // Set Cookie
+            document.cookie = ".AspNetCore.Culture=c=" + culture + "|uic=" + culture + ";path=/;max-age=31536000";
+            
+            // Set LocalStorage (for client-side checks)
+            try { 
+                localStorage.setItem('hmi_lang', culture === 'gu-IN' ? 'gu' : 'en');
+            } catch(e) {}
+
+            // Reload
+            location.reload();
+        }
+
+        // Global Sync on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            const langSelect = document.getElementById('langSelect');
+            try {
+                const savedLang = localStorage.getItem('hmi_lang');
+                if (langSelect && savedLang) {
+                    const currentVal = langSelect.value; 
+                    const targetVal = (savedLang === 'gu' || savedLang.includes('gu')) ? 'gu-IN' : 'en-US';
+                    
+                    // Keep dropdown in sync with storage if they differ
+                    if (currentVal !== targetVal) {
+                        langSelect.value = targetVal;
+                    }
+                }
+            } catch (e) { }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <div id="alarmModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 id="modalTitle" class="modal-title">ALARM</h2>
+            <p id="modalMessage" class="modal-text"></p>
+
+            <div class="error-code-display">
+                <span class="error-code-label">Alarm Code:</span>
+                <span id="alarmCodeValue" class="error-code-value">0</span>
+            </div>
+
+            <button id="modalAcknowledgeBtn" class="hmi-btn btn-red">OK</button>
+        </div>
+    </div>
+</body>
+</html>

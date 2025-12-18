@@ -1,0 +1,337 @@
+﻿@page
+@model FX5u_Web_HMI_App.Pages.BrakerNames2Model
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Breaker Names 2"];
+}
+
+<style>
+    .string-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px 40px;
+        margin-top: 30px;
+    }
+
+    .input-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .input-group label {
+            font-weight: 700;
+            color: #495057;
+            width: 40px;
+        }
+
+    input[type="text"] {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        font-size: 1.05em;
+        font-family: inherit;
+    }
+
+    body {
+        font-family: 'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+        background: #e9ecef;
+        color: #343a40;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+        margin: 0;
+        padding-top: 50px;
+    }
+
+    .container {
+        background: #fff;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,.1);
+        width: 100%;
+        max-width: 800px;
+        text-align: center;
+    }
+
+    h1 {
+        color: #007bff;
+        margin-bottom: 15px;
+    }
+
+    .status-message {
+        margin-top: 25px;
+        padding: 12px;
+        border-radius: 5px;
+        font-weight: 500;
+        font-size: 1.1em;
+        border: 1px solid;
+    }
+
+    .status-connected {
+        background: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+    }
+
+    .status-disconnected {
+        background: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+    }
+
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        padding: 12px;
+        margin-top: 15px;
+        border-radius: 5px;
+        font-weight: 500;
+        text-align: left;
+    }
+
+    .write-status {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 5px;
+        font-weight: 500;
+        text-align: left;
+        min-height: 1.5em;
+        border: 1px solid transparent;
+    }
+
+        .write-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .write-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+    .main-button-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 30px;
+    }
+
+    .hmi-btn {
+        padding: 15px;
+        font-size: 1.1em;
+        font-weight: 700;
+        color: #fff;
+        border: 2px solid #343a40;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color .3s;
+    }
+
+    .btn-blue {
+        background: #007bff;
+    }
+</style>
+
+<div class="container text-center">
+    <h1>@Localizer["BREAKER NAMES 2"]</h1>
+    @Html.AntiForgeryToken()
+
+    <div class="status-message" id="connectionStatus"></div>
+    <div class="error-message" id="errorMessage" style="display:none;"></div>
+
+    <div class="string-grid">
+        @for (int i = 1; i <= 10; i++)
+        {
+            // Display labels 21..30 and 31..40
+            <div class="input-group">
+                <label>@(i + 20).</label>
+                <input type="text" id="BrakerName@(i)" maxlength="20" />
+            </div>
+            <div class="input-group">
+                <label>@(i + 30).</label>
+                <input type="text" id="BrakerName@(i + 10)" maxlength="20" />
+            </div>
+        }
+    </div>
+
+    <div class="write-status" id="writeStatusMessage"></div>
+    <div class="main-button-container">
+        <button class="btn-blue hmi-btn" id="btn-back">@Localizer["BACK"]</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const writeStatusMessageDiv = document.getElementById('writeStatusMessage');
+        // Get Global Language Selector
+        const langSelect = document.getElementById('langSelect');
+
+        const allRegisterIds = @Html.Raw(
+                    Json.Serialize(
+                            Model.GetType().GetProperties()
+                                    .Where(p => p.IsDefined(typeof(Microsoft.AspNetCore.Mvc.BindPropertyAttribute), false)
+                                                  && p.Name != "ConnectionStatus" && p.Name != "ErrorMessage")
+                                    .Select(p => p.Name)
+                    )
+            );
+
+    const registerValues = {}; // English (PLC)
+    let guValues = {};         // Gujarati (DB)
+
+        async function fetchGujarati() {
+            try {
+                const r = await fetch('?handler=GetGujarati');
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                const j = await r.json();
+                guValues = j.values || {};
+            } catch (e) {
+                guValues = {};
+            }
+        }
+
+        function applyLanguage() {
+            // FIX: Correct check for gu-IN
+            const isGu = langSelect && langSelect.value.indexOf('gu') !== -1;
+
+            allRegisterIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.value = isGu ? (guValues[id] ?? '') : (registerValues[id] ?? '');
+            });
+        }
+
+        function updateUI(data) {
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.textContent = `Connection Status: ${data.connectionStatus}`;
+            statusDiv.className = `status-message ${data.connectionStatus.toLowerCase().includes('connected') ? 'status-connected' : 'status-disconnected'}`;
+
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.style.display = data.errorMessage ? 'block' : 'none';
+            errorDiv.innerHTML = data.errorMessage ? `<strong>Error:</strong> ${data.errorMessage}` : '';
+
+            allRegisterIds.forEach(id => {
+                const el = document.getElementById(id);
+                const dataKey = id.charAt(0).toLowerCase() + id.slice(1);
+                if (!el || data[dataKey] === undefined) return;
+
+                registerValues[id] = data[dataKey];
+
+                // Only update input if English mode selected
+                const isGu = langSelect && langSelect.value.indexOf('gu') !== -1;
+                if (!isGu) {
+                    if (document.activeElement !== el) el.value = data[dataKey];
+                }
+            });
+        }
+
+        async function fetchData() {
+            try {
+                const response = await fetch('?handler=ReadRegisters');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                updateUI(data);
+            } catch (error) {
+                updateUI({ connectionStatus: "Fetch Error", errorMessage: error.message });
+            }
+        }
+
+        async function writeString(name, value) {
+            writeStatusMessageDiv.textContent = `Sending...`;
+            writeStatusMessageDiv.className = 'write-status';
+            try {
+                const response = await fetch(`?handler=WriteString`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ Name: name, Value: value })
+                });
+                if (!response.ok) throw new Error(`Server error ${response.status}`);
+                const result = await response.json();
+
+                if(result.status === 'Success') {
+                    writeStatusMessageDiv.textContent = result.message;
+                    writeStatusMessageDiv.className = 'write-status success';
+                } else {
+                    writeStatusMessageDiv.textContent = result.message;
+                    writeStatusMessageDiv.className = 'write-status error';
+                }
+                await fetchData();
+            } catch (error) {
+                writeStatusMessageDiv.textContent = `Write failed: ${error.message}`;
+                writeStatusMessageDiv.className = 'write-status error';
+            }
+        }
+
+        async function saveValue(name, value) {
+            const isGu = langSelect && langSelect.value.indexOf('gu') !== -1;
+
+            if (isGu) {
+                try {
+                    const response = await fetch('?handler=SetGujarati', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body: JSON.stringify({ name, value })
+                    });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const result = await response.json();
+                    if (result.status !== 'Success') throw new Error(result.message || 'Save failed');
+
+                    writeStatusMessageDiv.textContent = 'Saved (Gujarati)';
+                    writeStatusMessageDiv.className = 'write-status success';
+                    guValues[name] = value;
+                } catch (e) {
+                    writeStatusMessageDiv.textContent = `Error: ${e.message}`;
+                    writeStatusMessageDiv.className = 'write-status error';
+                }
+            } else {
+                await writeString(name, value);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            allRegisterIds.forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('keydown', async (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault(); input.blur();
+                            
+                        }
+                    });
+                    input.addEventListener('change', async () => {
+                                    try { await saveValue(id, input.value); }
+                                    catch (error) { console.error(error); }
+                    });
+                }
+            });
+
+            document.getElementById('btn-back').addEventListener('click', () => { window.location.href = '/BrakerNames'; });
+
+            await fetchGujarati();
+            await fetchData();
+            applyLanguage();
+
+            setInterval(fetchData, 1000);
+
+            if (langSelect) {
+                langSelect.addEventListener('change', async () => {
+                    const isGu = langSelect.value.indexOf('gu') !== -1;
+                    if (isGu) await fetchGujarati();
+                    applyLanguage();
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,80 @@
+﻿@model FX5u_Web_HMI_App.Pages.PointTableModelBase
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th style="width: 150px;"></th>
+            <th>WRITE 1</th>
+            <th>WRITE 2</th>
+            <th>WRITE 3</th>
+            <th>READ 1</th>
+            <th>READ 2</th>
+            <th>READ 3</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="row-label">POSITION</td>
+            <td><input type="number" id="PositionWrite1" /></td>
+            <td><input type="number" id="PositionWrite2" /></td>
+            <td><input type="number" id="PositionWrite3" /></td>
+            <td><span class="read-only-value" id="PositionRead1"></span></td>
+            <td><span class="read-only-value" id="PositionRead2"></span></td>
+            <td><span class="read-only-value" id="PositionRead3"></span></td>
+        </tr>
+        <tr>
+            <td class="row-label">SPEED</td>
+            <td><input type="number" id="SpeedWrite1" /></td>
+            <td><input type="number" id="SpeedWrite2" /></td>
+            <td><input type="number" id="SpeedWrite3" /></td>
+            <td><span class="read-only-value" id="SpeedRead1"></span></td>
+            <td><span class="read-only-value" id="SpeedRead2"></span></td>
+            <td><span class="read-only-value" id="SpeedRead3"></span></td>
+        </tr>
+        <tr>
+            <td class="row-label">ACC</td>
+            <td><input type="number" id="AccWrite1" /></td>
+            <td><input type="number" id="AccWrite2" /></td>
+            <td><input type="number" id="AccWrite3" /></td>
+            <td><span class="read-only-value" id="AccRead1"></span></td>
+            <td><span class="read-only-value" id="AccRead2"></span></td>
+            <td><span class="read-only-value" id="AccRead3"></span></td>
+        </tr>
+        <tr>
+            <td class="row-label">DECC</td>
+            <td><input type="number" id="DeccWrite1" /></td>
+            <td><input type="number" id="DeccWrite2" /></td>
+            <td><input type="number" id="DeccWrite3" /></td>
+            <td><span class="read-only-value" id="DeccRead1"></span></td>
+            <td><span class="read-only-value" id="DeccRead2"></span></td>
+            <td><span class="read-only-value" id="DeccRead3"></span></td>
+        </tr>
+        <tr>
+            <td class="row-label">DWELL TIME</td>
+            <td><input type="number" id="DwellTimeWrite1" /></td>
+            <td><input type="number" id="DwellTimeWrite2" /></td>
+            <td><input type="number" id="DwellTimeWrite3" /></td>
+            <td><span class="read-only-value" id="DwellTimeRead1"></span></td>
+            <td><span class="read-only-value" id="DwellTimeRead2"></span></td>
+            <td><span class="read-only-value" id="DwellTimeRead3"></span></td>
+        </tr>
+        <tr>
+            <td class="row-label">AUX. FUN.</td>
+            <td><input type="number" id="AuxWrite1" /></td>
+            <td><input type="number" id="AuxWrite2" /></td>
+            <td><input type="number" id="AuxWrite3" /></td>
+            <td><span class="read-only-value" id="AuxRead1"></span></td>
+            <td><span class="read-only-value" id="AuxRead2"></span></td>
+            <td><span class="read-only-value" id="AuxRead3"></span></td>
+        </tr>
+        <tr>
+            <td class="row-label">M - CODE</td>
+            <td><input type="number" id="MWrite1" /></td>
+            <td><input type="number" id="MWrite2" /></td>
+            <td><input type="number" id="MWrite3" /></td>
+            <td><span class="read-only-value" id="MRead1"></span></td>
+            <td><span class="read-only-value" id="MRead2"></span></td>
+            <td><span class="read-only-value" id="MRead3"></span></td>
+        </tr>
+    </tbody>
+</table>

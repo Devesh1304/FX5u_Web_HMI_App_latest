@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+		<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+		<xsd:element name="root" msdata:IsDataSet="true">
+			<xsd:complexType>
+				<xsd:choice maxOccurs="unbounded">
+					<xsd:element name="metadata">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" />
+							</xsd:sequence>
+							<xsd:attribute name="name" use="required" type="xsd:string" />
+							<xsd:attribute name="type" type="xsd:string" />
+							<xsd:attribute name="mimetype" type="xsd:string" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="assembly">
+						<xsd:complexType>
+							<xsd:attribute name="alias" type="xsd:string" />
+							<xsd:attribute name="name" type="xsd:string" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="data">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="resheader">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" />
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:complexType>
+		</xsd:element>
+	</xsd:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+
+	<data name="History Viewer" xml:space="preserve">
+    <value>હિસ્ટ્રી વ્યૂઅર</value>
+  </data>
+	<data name="Historical Data Viewer" xml:space="preserve">
+    <value>ઐતિહાસિક ડેટા વ્યૂઅર</value>
+  </data>
+	<data name="Last 1 Hour" xml:space="preserve">
+    <value>છેલ્લા 1 કલાક</value>
+  </data>
+	<data name="Last 24 Hours" xml:space="preserve">
+    <value>છેલ્લા 24 કલાક</value>
+  </data>
+	<data name="Last 7 Days" xml:space="preserve">
+    <value>છેલ્લા 7 દિવસ</value>
+  </data>
+	<data name="Start Time:" xml:space="preserve">
+    <value>શરૂઆતનો સમય:</value>
+  </data>
+	<data name="End Time:" xml:space="preserve">
+    <value>અંત સમય:</value>
+  </data>
+	<data name="Filter" xml:space="preserve">
+    <value>ફિલ્ટર</value>
+  </data>
+	<data name="HOME" xml:space="preserve">
+    <value>હોમ</value>
+  </data>
+	<data name="NEXT" xml:space="preserve">
+    <value>આગળ</value>
+  </data>
+
+	<data name="Torque" xml:space="preserve">
+    <value>ટોર્ક</value>
+  </data>
+	<data name="Position (mm)" xml:space="preserve">
+    <value>પોઝિશન (mm)</value>
+  </data>
+	<data name="RPM" xml:space="preserve">
+    <value>RPM</value>
+  </data>
+	<data name="Breaker No" xml:space="preserve">
+    <value>બ્રેકર નંબર</value>
+  </data>
+	<data name="Local Time (IST)" xml:space="preserve">
+    <value>સ્થાનિક સમય (IST)</value>
+  </data>
+	<data name="Time" xml:space="preserve">
+    <value>સમય</value>
+  </data>
+</root>

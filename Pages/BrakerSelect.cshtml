@@ -1,0 +1,284 @@
+﻿@page
+@model FX5u_Web_HMI_App.Pages.BrakerSelectModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Select Breaker"];
+}
+
+<style>
+    body {
+        font-family: 'Segoe UI', 'Noto Sans Gujarati', sans-serif;
+        background-color: #e9ecef;
+        color: #343a40;
+        display: flex;
+        justify-content: center;
+        padding-top: 50px;
+        margin: 0;
+    }
+
+    .container {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 900px;
+        text-align: center;
+        position: relative;
+    }
+
+    h1 {
+        color: #007bff;
+        margin-bottom: 30px;
+    }
+
+    .status-message {
+        margin-top: 25px;
+        padding: 12px;
+        border-radius: 5px;
+        font-weight: 500;
+        font-size: 1.1em;
+        border: 1px solid;
+    }
+
+    .status-connected {
+        background: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+    }
+
+    .status-disconnected, .error-message, .write-status.error {
+        background: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+    }
+
+    .error-message, .write-status.error {
+        padding: 12px;
+        margin-top: 15px;
+        border-radius: 5px;
+        font-weight: 500;
+        text-align: left;
+    }
+
+    .write-status {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 5px;
+        font-weight: 500;
+        text-align: left;
+        min-height: 1.5em;
+    }
+
+        .write-status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+    .main-button-container {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .hmi-btn {
+        padding: 10px;
+        font-size: 1em;
+        font-weight: 700;
+        color: #fff;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color .2s;
+        border: 2px solid #343a40;
+    }
+
+    .btn-green {
+        background: #28a745;
+    }
+
+    .btn-red {
+        background: #dc3545;
+    }
+
+    .btn-blue {
+        background: #007bff;
+    }
+
+    .breaker-grid {
+        display: grid;
+        grid-template-columns: 3fr 1fr 3fr 1fr;
+        gap: 15px 20px;
+        margin-top: 30px;
+    }
+
+    .name-display-box {
+        background: #e9ecef;
+        border: 2px inset #adb5bd;
+        border-radius: 5px;
+        padding: 10px;
+        text-align: left;
+        font-size: 1.05em;
+        font-weight: 700;
+        color: #343a40;
+        min-height: 42.5px;
+        display: flex;
+        align-items: center;
+        box-sizing: border-box;
+    }
+</style>
+
+<div class="container text-center">
+    <h1>@Localizer["SELECT BREAKER"]</h1>
+    @Html.AntiForgeryToken()
+
+    <div class="status-message" id="connectionStatus"></div>
+    <div class="error-message" id="errorMessage" style="display: none;"></div>
+
+    <div class="breaker-grid">
+        @for (int i = 1; i <= 10; i++)
+        {
+            <div class="name-display-box">
+                <span id="BrakerName@(i)"></span>
+            </div>
+            <button class="hmi-btn btn-select" id="btn-select-@(i)">@Localizer["SELECT"]</button>
+
+            <div class="name-display-box">
+                <span id="BrakerName@(i + 10)"></span>
+            </div>
+            <button class="hmi-btn btn-select" id="btn-select-@(i + 10)">@Localizer["SELECT"]</button>
+        }
+    </div>
+
+    <div class="write-status" id="writeStatusMessage"></div>
+    <div class="main-button-container">
+        <button class="btn-blue hmi-btn" id="btn-home">@Localizer["HOME"]</button>
+        <button class="btn-blue hmi-btn" id="btn-next">@Localizer["NEXT"]</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const writeStatusMessageDiv = document.getElementById('writeStatusMessage');
+        const langSelect = document.getElementById('langSelect');
+
+        const allRegisterIds = @Html.Raw(
+                    Json.Serialize(
+                            Model.GetType().GetProperties()
+                                      .Where(p => p.IsDefined(typeof(Microsoft.AspNetCore.Mvc.BindPropertyAttribute), false)
+                                  && p.Name != "ConnectionStatus" && p.Name != "ErrorMessage")
+                                      .Select(p => p.Name)
+                    )
+            );
+
+    function updateUI(data){
+        const statusDiv = document.getElementById('connectionStatus');
+        statusDiv.textContent = `Connection Status: ${data.connectionStatus}`;
+        statusDiv.className = `status-message ${data.connectionStatus.toLowerCase().includes('connected') ? 'status-connected' : 'status-disconnected'}`;
+
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.style.display = data.errorMessage ? 'block' : 'none';
+            errorDiv.innerHTML = data.errorMessage ? `<strong>Error:</strong> ${data.errorMessage}` : '';
+
+            // Fix: Check for gu-IN to prevent overwriting Gujarati text
+            const isGu = langSelect && langSelect.value.indexOf('gu') !== -1;
+
+            allRegisterIds.forEach(id => {
+                const el = document.getElementById(id);
+                const key = id.charAt(0).toLowerCase() + id.slice(1);
+                if (!el || data[key] === undefined) return;
+
+                if (el.tagName === 'SPAN') {
+                    if (id.startsWith('BrakerName') && isGu) return; // Skip overwrite
+                    el.textContent = data[key];
+                }
+            });
+
+            if (data.buttonStatusBits1_10 !== undefined && data.buttonStatusBits11_20 !== undefined){
+                updateButtonStyles(data.buttonStatusBits1_10, data.buttonStatusBits11_20);
+            }
+        }
+
+        function updateButtonStyles(bits1, bits2){
+            document.querySelectorAll('.btn-select').forEach(btn => {
+                const n = parseInt(btn.id.split('-')[2], 10);
+                const on = (n <= 10) ? ((bits1 >> (n - 1)) & 1) : ((bits2 >> (n - 11)) & 1);
+                btn.classList.toggle('btn-green', !!on);
+                btn.classList.toggle('btn-red', !on);
+            });
+        }
+
+        async function fetchData(){
+            try {
+                const r = await fetch('?handler=ReadRegisters');
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                updateUI(await r.json());
+            } catch(e) {
+                updateUI({connectionStatus:'Fetch Error', errorMessage:e.message});
+            }
+        }
+
+        // ===== EN↔GU names =====
+        async function refreshBreakerNames(){
+            try {
+                const isGu = langSelect && langSelect.value.indexOf('gu') !== -1;
+
+                const handler = isGu ? 'ReadBreakerGridLocalized&lang=gu' : 'ReadBreakerGrid';
+                const r = await fetch(`?handler=${handler}`);
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                const j = await r.json();
+                if (!j.success) return;
+
+                const names = j.names || [];
+                for(let i=0; i<20; i++){
+                    const span = document.getElementById('BrakerName'+(i+1));
+                    if(span) span.textContent = names[i] || '';
+                }
+            } catch(e) {
+                console.error('refreshBreakerNames:', e);
+            }
+        }
+
+        // ===== actions =====
+        async function selectBreaker(n){
+            writeStatusMessageDiv.textContent = `Selecting Breaker ${n}...`;
+            writeStatusMessageDiv.className='write-status';
+            try {
+                const r = await fetch(`?handler=SelectBreaker`, {
+                    method:'POST',
+                    headers: {
+                        'Content-Type':'application/json',
+                        'RequestVerificationToken':document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ BreakerNumber:n })
+                });
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                const j = await r.json();
+                writeStatusMessageDiv.textContent = j.message;
+                writeStatusMessageDiv.className = `write-status ${j.status.toLowerCase()}`;
+                await fetchData();
+            } catch(e) {
+                writeStatusMessageDiv.textContent = `Write failed: ${e.message}`;
+                writeStatusMessageDiv.className = 'write-status error';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.btn-select').forEach(b => {
+                b.addEventListener('click', () => selectBreaker(parseInt(b.id.split('-')[2], 10)));
+            });
+
+            document.getElementById('btn-home').addEventListener('click', () => window.location.href='/Index');
+            document.getElementById('btn-next').addEventListener('click', () => window.location.href='/BrakerSelect2');
+
+            if (langSelect) langSelect.addEventListener('change', refreshBreakerNames);
+
+            fetchData();
+            refreshBreakerNames();
+            setInterval(fetchData, 1000);
+            setInterval(refreshBreakerNames, 2000);
+        });
+    </script>
+}

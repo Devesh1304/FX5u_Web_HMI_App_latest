@@ -1,0 +1,417 @@
+﻿@page
+@model FX5u_Web_HMI_App.Pages.AlarmsModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["Alarms Screen"];
+}
+
+<style>
+    /* --- MAIN CONTAINER --- */
+    .container {
+        background-color: #ffffff;
+        padding: 24px 28px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 900px;
+        text-align: center;
+        margin: 20px auto;
+    }
+
+    h1 {
+        color: #007bff;
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+    }
+
+    /* --- ALARM LIST --- */
+    .error-list-container {
+        display: flex;
+        flex-wrap: wrap; /* Allows wrapping on small screens */
+        justify-content: center;
+        gap: 40px; /* Space between columns */
+        padding: 20px;
+        text-align: left;
+    }
+
+    .error-list-column {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 1rem;
+        flex: 1; /* Both columns take equal width */
+        min-width: 250px; /* Prevents them getting too thin */
+    }
+
+    .error-item {
+        white-space: nowrap;
+        padding: 4px 0;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    .al-title {
+        color: #dc3545; /* Red for emphasis */
+        font-weight: bold;
+        margin-right: 8px;
+        display: inline-block;
+        width: 50px; /* Align descriptions */
+    }
+
+    /* --- INDICATORS & INPUTS --- */
+    .indicator-section {
+        margin-top: 25px;
+        padding-top: 15px;
+        border-top: 1px solid #dee2e6;
+        text-align: left;
+    }
+
+    .indicator-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        padding: 8px 10px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+    }
+
+    .register-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 5px 0;
+    }
+
+        .indicator-item label, .register-item label {
+            font-weight: 600;
+            color: #5a6268;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+    .read-only-value {
+        font-weight: bold;
+        color: #0056b3;
+        font-size: 1.1em;
+    }
+
+    /* --- LED --- */
+    .led-indicator {
+        width: 28px;
+        height: 28px;
+        background-color: #dc3545; /* Red Off */
+        border-radius: 50%;
+        border: 2px solid #333;
+        transition: background-color 0.3s ease;
+        box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+    }
+
+    .led-on {
+        background-color: #28a745; /* Green On */
+        box-shadow: 0 0 10px #28a745, inset 0 0 5px rgba(255,255,255,0.5);
+    }
+
+    /* --- BUTTONS --- */
+    .main-button-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .hmi-btn {
+        flex-grow: 1;
+        padding: 15px;
+        font-size: 1.1em;
+        font-weight: bold;
+        color: white;
+        border: 2px solid #343a40;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        touch-action: manipulation;
+        width: 100%;
+        display: block;
+    }
+
+    .btn-green {
+        background-color: #28a745;
+    }
+
+    .btn-red {
+        background-color: #dc3545;
+    }
+
+    .btn-blue {
+        background-color: #007bff;
+    }
+
+    /* --- STATUS MESSAGES --- */
+    .status-message {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 5px;
+        font-weight: 500;
+        border: 1px solid;
+    }
+
+    .status-connected {
+        background-color: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+    }
+
+    .status-disconnected {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+    }
+
+    .write-status {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 5px;
+        font-weight: 500;
+        text-align: left;
+        min-height: 1.5em;
+    }
+
+        .write-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .write-status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+    /* --- MOBILE OVERRIDES --- */
+    @@media screen and (max-width: 768px) {
+
+        .container {
+            padding: 15px;
+        }
+        /* 1. Stack Alarm Columns Vertically on Phone */
+        .error-list-container {
+            flex-direction: column;
+            gap: 20px;
+        }
+        /* 2. Force Labels/Values to stay in Rows (Fixes scattering) */
+        .register-item, .indicator-item {
+            flex-direction: row !important;
+            align-items: center !important;
+        }
+        /* 3. Adjust Buttons */
+        .main-button-container {
+            grid-template-columns: 1fr; /* Stack buttons on small screens */
+        }
+    }
+</style>
+
+<div class="container text-center">
+    <h1>@Localizer["Jog Mode Screen"]</h1>
+    @Html.AntiForgeryToken()
+
+    <div class="status-message" id="connectionStatus"></div>
+    <div class="error-message" id="errorMessage" style="display: none;"></div>
+
+    <div class="error-list-container text-xl-start">
+        <div class="error-list-column">
+            <span class="error-item"><span class="al-title">AL10</span> @Localizer["Undervoltage"]</span>
+            <span class="error-item"><span class="al-title">AL15</span> @Localizer["Memory error 2 (EEP-ROM)"]</span>
+            <span class="error-item"><span class="al-title">AL16</span> @Localizer["Encoder initial communication error 1"]</span>
+            <span class="error-item"><span class="al-title">AL19</span> @Localizer["Memory error 3 (FLASH-ROM)"]</span>
+            <span class="error-item"><span class="al-title">AL1E</span> @Localizer["Encoder initial communication error 2"]</span>
+            <span class="error-item"><span class="al-title">AL1F</span> @Localizer["Encoder initial communication error 3"]</span>
+            <span class="error-item"><span class="al-title">AL20</span> @Localizer["Encoder normal communication error 1"]</span>
+            <span class="error-item"><span class="al-title">AL21</span> @Localizer["Encoder normal communication error 2"]</span>
+            <span class="error-item"><span class="al-title">AL24</span> @Localizer["Main circuit error"]</span>
+            <span class="error-item"><span class="al-title">AL30</span> @Localizer["Regenerative error"]</span>
+            <span class="error-item"><span class="al-title">AL31</span> @Localizer["Overspeed"]</span>
+            <span class="error-item"><span class="al-title">AL32</span> @Localizer["Overcurrent"]</span>
+            <span class="error-item"><span class="al-title">AL33</span> @Localizer["Overvoltage"]</span>
+            <span class="error-item"><span class="al-title">AL35</span> @Localizer["Command frequency error"]</span>
+            <span class="error-item"><span class="al-title">AL37</span> @Localizer["Parameter error"]</span>
+        </div>
+        <div class="error-list-column">
+            <span class="error-item"><span class="al-title">AL46</span> @Localizer["Servo motor overheat"]</span>
+            <span class="error-item"><span class="al-title">AL50</span> @Localizer["Overload 1"]</span>
+            <span class="error-item"><span class="al-title">AL51</span> @Localizer["Overload 2"]</span>
+            <span class="error-item"><span class="al-title">AL52</span> @Localizer["Error excessive"]</span>
+            <span class="error-item"><span class="al-title">AL56</span> @Localizer["Forced stop error"]</span>
+            <span class="error-item"><span class="al-title">AL8A</span> @Localizer["communication time-out error"]</span>
+            <span class="error-item"><span class="al-title">AL8E</span> @Localizer["communication time-out error"]</span>
+            <span class="error-item"><span class="al-title">AL91</span> @Localizer["Servo amplifier overheat warning"]</span>
+            <span class="error-item"><span class="al-title">ALE0</span> @Localizer["Excessive regenerative warning"]</span>
+            <span class="error-item"><span class="al-title">ALE1</span> @Localizer["Overload warning 1"]</span>
+            <span class="error-item"><span class="al-title">ALE6</span> @Localizer["Servo forced stop warning"]</span>
+            <span class="error-item"><span class="al-title">ALEC</span> @Localizer["Overload warning 2"]</span>
+            <span class="error-item"><span class="al-title">ALED</span> @Localizer["Output watt excess warning"]</span>
+        </div>
+    </div>
+
+    <div class="indicator-section">
+        <div class="indicator-item">
+            <label>@Localizer["Servo Communication Error:"]</label>
+            <div id="ServoCommError" class="led-indicator"></div>
+        </div>
+        <div class="register-item"><label>@Localizer["Servo Communication Error Code:"]</label><span class="read-only-value" id="ServoCommErrorCode"></span></div>
+        <div class="register-item"><label>@Localizer["Servo Error:"]</label><span class="read-only-value" id="ServoError"></span></div>
+        <button class="hmi-btn hmi-interactive-btn btn-green" id="btn-rst">@Localizer["ERROR RESET"]</button>
+    </div>
+
+    <div class="main-button-container">
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-home">@Localizer["HOME"]</button>
+    </div>
+    <div class="write-status" id="writeStatusMessage"></div>
+</div>
+
+@section Scripts {
+    <script>
+        const writeStatusMessageDiv = document.getElementById('writeStatusMessage');
+        let registerValues = {
+            PointControlRegister: 0,
+            StatusBits: 0
+        };
+
+        const buttonConfig = {
+            'btn-rst': {
+                actions: [],
+                momentarySideEffect: { address: 'M20' },
+                statusBit: { register: 'StatusBits', position: 0 }
+            },
+            'btn-home': {
+                actions: [],
+                redirect: '/Index'
+            }
+        };
+
+        const allRegisterIds = @Html.Raw(Json.Serialize(Model.GetType().GetProperties().Where(p => p.IsDefined(typeof(Microsoft.AspNetCore.Mvc.BindPropertyAttribute), false) && p.Name != "ConnectionStatus" && p.Name != "ErrorMessage").Select(p => p.Name)));
+
+        function updateUI(data) {
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.textContent = `Connection Status: ${data.connectionStatus}`;
+            statusDiv.className = `status-message ${data.connectionStatus.toLowerCase().includes('connected') ? 'status-connected' : 'status-disconnected'}`;
+
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.style.display = data.errorMessage ? 'block' : 'none';
+            errorDiv.innerHTML = data.errorMessage ? `<strong>Error:</strong> ${data.errorMessage}` : '';
+
+            allRegisterIds.forEach(id => {
+                const element = document.getElementById(id);
+                const dataKey = id.charAt(0).toLowerCase() + id.slice(1);
+                if (!element || data[dataKey] === undefined) return;
+
+                if (element.tagName === 'INPUT' && document.activeElement !== element) {
+                    element.value = data[dataKey];
+                } else if (element.tagName === 'SPAN') {
+                    element.textContent = data[dataKey];
+                }
+            });
+
+            // Update local registerValues
+            if (data.statusBits !== undefined) {
+                registerValues.StatusBits = data.statusBits;
+            }
+
+            // Lamp Logic
+            const servoErrorIndicator = document.getElementById('ServoCommError');
+            if (servoErrorIndicator && data.statusBits !== undefined) {
+                const isServoErrorOn = (data.statusBits >> 1) & 1;
+                servoErrorIndicator.classList.toggle('led-on', isServoErrorOn);
+            }
+            updateButtonStyles();
+        }
+
+        async function writeRegister(name, value) {
+            writeStatusMessageDiv.textContent = `Sending new value for ${name}...`;
+            writeStatusMessageDiv.className = 'write-status';
+            try {
+                const response = await fetch(`?handler=WriteRegister`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value },
+                    body: JSON.stringify({ RegisterName: name, Value: value })
+                });
+                if (!response.ok) throw new Error(`Server responded with status ${response.status}`);
+                const result = await response.json();
+                writeStatusMessageDiv.textContent = result.message;
+                writeStatusMessageDiv.className = `write-status ${result.status.toLowerCase()}`;
+                await fetchData();
+            } catch (error) {
+                writeStatusMessageDiv.textContent = `Write failed: ${error.message}`;
+                writeStatusMessageDiv.className = 'write-status error';
+            }
+        }
+
+        async function writeBit(address, value) {
+            try {
+                await fetch(`?handler=WriteBit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ Address: address, Value: value })
+                });
+            } catch (error) {
+                console.error(`Write bit failed for ${address}:`, error);
+            }
+        }
+
+        async function fetchData() {
+            try {
+                const response = await fetch('?handler=ReadRegisters');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                updateUI(data);
+            } catch (error) {
+                updateUI({ connectionStatus: "Fetch Error", errorMessage: error.message });
+            }
+        }
+
+        function updateButtonStyles() {
+            for (const buttonId in buttonConfig) {
+                const config = buttonConfig[buttonId];
+                const button = document.getElementById(buttonId);
+                if (!button) continue;
+
+                if (config.statusBit) {
+                    const isBitOn = (registerValues[config.statusBit.register] >> config.statusBit.position) & 1;
+                    button.classList.toggle('btn-green', isBitOn);
+                    button.classList.toggle('btn-red', !isBitOn);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.hmi-interactive-btn').forEach(button => {
+                const config = buttonConfig[button.id];
+                if (!config) return;
+
+                if (config.momentarySideEffect) {
+                    const address = config.momentarySideEffect.address;
+                    const press = () => writeBit(address, true);
+                    const release = () => writeBit(address, false);
+
+                    button.addEventListener('mousedown', press);
+                    button.addEventListener('mouseup', release);
+                    button.addEventListener('mouseleave', release);
+                    button.addEventListener('touchstart', (e) => { e.preventDefault(); press(); });
+                    button.addEventListener('touchend', (e) => { e.preventDefault(); release(); });
+                }
+
+                if (config.redirect) {
+                    button.addEventListener('click', () => window.location.href = config.redirect);
+                }
+            });
+
+            fetchData();
+            setInterval(fetchData, 1000);
+        });
+    </script>
+}

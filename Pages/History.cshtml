@@ -1,0 +1,193 @@
+﻿@page
+@model FX5u_Web_HMI_App.Pages.HistoryModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@{
+    ViewData["Title"] = Localizer["History Viewer"];
+}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #e9ecef;
+        color: #343a40;
+        min-height: 100vh;
+        margin: 0;
+    }
+
+    .container {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 1200px;
+        margin: 50px auto;
+        text-align: center;
+    }
+
+    h1 {
+        color: #007bff;
+        margin-bottom: 20px;
+    }
+
+    .hmi-btn {
+        padding: 8px 20px;
+        font-size: 1em;
+        font-weight: bold;
+        color: white;
+        border: 2px solid #343a40;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-blue {
+        background-color: #007bff;
+    }
+
+    .filter-bar {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+        .filter-bar label {
+            font-weight: 600;
+            color: #5a6268;
+        }
+
+        .filter-bar input[type="datetime-local"] {
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+    .quick-filters {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+        .quick-filters .hmi-btn {
+            background-color: #6c757d;
+            text-decoration: none;
+        }
+
+    .chart-container {
+        margin-bottom: 30px;
+    }
+
+    .footer-nav {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #dee2e6;
+    }
+
+        .footer-nav .hmi-btn {
+            width: 250px;
+            margin: 5px 10px;
+        }
+</style>
+
+<div class="container text-center">
+    @Html.AntiForgeryToken()
+    <h1>@Localizer["Historical Data Viewer"]</h1>
+
+    <div class="quick-filters">
+        <a class="hmi-btn" href="?Range=1h">@Localizer["Last 1 Hour"]</a>
+        <a class="hmi-btn" href="?Range=24h">@Localizer["Last 24 Hours"]</a>
+        <a class="hmi-btn" href="?Range=7d">@Localizer["Last 7 Days"]</a>
+    </div>
+
+    <form method="get" class="filter-bar" id="historyFilterForm">
+        <div>
+            <label for="DisplayStart">@Localizer["Start Time:"]</label>
+            <input type="datetime-local" step="1"
+                   asp-for="DisplayStart" asp-format="{0:yyyy-MM-ddTHH:mm:ss}" />
+        </div>
+        <div>
+            <label for="DisplayEnd">@Localizer["End Time:"]</label>
+            <input type="datetime-local" step="1"
+                   asp-for="DisplayEnd" asp-format="{0:yyyy-MM-ddTHH:mm:ss}" />
+        </div>
+        <input type="hidden" asp-for="ClientOffsetMinutes" id="ClientOffsetMinutes" />
+        <button type="submit" class="hmi-btn btn-blue">@Localizer["Filter"]</button>
+    </form>
+
+    <div class="chart-container">
+        <canvas id="historyChart"></canvas>
+    </div>
+
+    <div class="footer-nav">
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-home">@Localizer["HOME"]</button>
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-next">@Localizer["NEXT"]</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const ctx = document.getElementById('historyChart').getContext('2d');
+          const form = document.getElementById('historyFilterForm');
+          const offsetInput = document.getElementById('ClientOffsetMinutes');
+
+          // Send the client's offset on submit
+          if (form && offsetInput) {
+            form.addEventListener('submit', () => {
+              offsetInput.value = new Date().getTimezoneOffset();
+            });
+          }
+
+          // Build the chart using preformatted IST labels from server
+          const labelsLocal  = @Html.Raw(Model.ChartDataLabelsLocal ?? "[]");
+          const dataTorque   = @Html.Raw(Model.ChartDataValues_Torque ?? "[]");
+          const dataPosition = @Html.Raw(Model.ChartDataValues_Position ?? "[]");
+          const dataRPM      = @Html.Raw(Model.ChartDataValues_RPM ?? "[]");
+          const dataBrkNo    = @Html.Raw(Model.ChartDataValues_BrakerNo ?? "[]");
+
+          // Localized Chart Labels
+          const lblTorque   = '@Localizer["Torque"]';
+          const lblPosition = '@Localizer["Position (mm)"]';
+          const lblRPM      = '@Localizer["RPM"]';
+          const lblBrk      = '@Localizer["Breaker No"]';
+          const lblXAxis    = '@Localizer["Local Time (IST)"]';
+          const lblTimeTooltip = '@Localizer["Time"]';
+
+          new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: labelsLocal,
+              datasets: [
+                { label: lblTorque,   data: dataTorque,   borderColor: '#FF6384', yAxisID: 'y' },
+                { label: lblPosition, data: dataPosition, borderColor: '#36A2EB', yAxisID: 'y' },
+                { label: lblRPM,      data: dataRPM,      borderColor: '#FFCE56', yAxisID: 'y' },
+                { label: lblBrk,      data: dataBrkNo,    borderColor: '#4BC0C0', yAxisID: 'y', stepped: true }
+              ]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                x: { type: 'category', title: { display: true, text: lblXAxis } },
+                y: { beginAtZero: true }
+              },
+              plugins: {
+                tooltip: { callbacks: { title: (items) => `${lblTimeTooltip}: ${items[0].label}` } }
+              }
+            }
+          });
+
+          // Navigation
+          const cfg = { 'btn-home': '/Index', 'btn-next': '/LogTable' };
+          document.querySelectorAll('.hmi-interactive-btn').forEach(btn => {
+            const to = cfg[btn.id];
+            if (to) btn.addEventListener('click', () => window.location.href = to);
+          });
+        });
+    </script>
+}

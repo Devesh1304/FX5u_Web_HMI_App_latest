@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+		<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+		<xsd:element name="root" msdata:IsDataSet="true">
+			<xsd:complexType>
+				<xsd:choice maxOccurs="unbounded">
+					<xsd:element name="metadata">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" />
+							</xsd:sequence>
+							<xsd:attribute name="name" use="required" type="xsd:string" />
+							<xsd:attribute name="type" type="xsd:string" />
+							<xsd:attribute name="mimetype" type="xsd:string" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="assembly">
+						<xsd:complexType>
+							<xsd:attribute name="alias" type="xsd:string" />
+							<xsd:attribute name="name" type="xsd:string" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="data">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="resheader">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" />
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:complexType>
+		</xsd:element>
+	</xsd:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+
+	<data name="Alarms Screen" xml:space="preserve">
+    <value>અલાર્મ સ્ક્રીન</value>
+  </data>
+	<data name="Jog Mode Screen" xml:space="preserve">
+    <value>અલાર્મ સ્ક્રીન</value> </data>
+	<data name="HOME" xml:space="preserve">
+    <value>હોમ</value>
+  </data>
+	<data name="ERROR RESET" xml:space="preserve">
+    <value>એરર રીસેટ</value>
+  </data>
+
+	<data name="Servo Communication Error:" xml:space="preserve">
+    <value>સર્વો કોમ્યુનિકેશન એરર:</value>
+  </data>
+	<data name="Servo Communication Error Code:" xml:space="preserve">
+    <value>સર્વો કોમ્યુનિકેશન એરર કોડ:</value>
+  </data>
+	<data name="Servo Error:" xml:space="preserve">
+    <value>સર્વો એરર:</value>
+  </data>
+
+	<data name="Undervoltage" xml:space="preserve">
+    <value>અંડરવોલ્ટેજ</value>
+  </data>
+	<data name="Memory error 2 (EEP-ROM)" xml:space="preserve">
+    <value>મેમરી એરર 2 (EEP-ROM)</value>
+  </data>
+	<data name="Encoder initial communication error 1" xml:space="preserve">
+    <value>એન્કોડર પ્રારંભિક કોમ્યુનિકેશન એરર 1</value>
+  </data>
+	<data name="Memory error 3 (FLASH-ROM)" xml:space="preserve">
+    <value>મેમરી એરર 3 (FLASH-ROM)</value>
+  </data>
+	<data name="Encoder initial communication error 2" xml:space="preserve">
+    <value>એન્કોડર પ્રારંભિક કોમ્યુનિકેશન એરર 2</value>
+  </data>
+	<data name="Encoder initial communication error 3" xml:space="preserve">
+    <value>એન્કોડર પ્રારંભિક કોમ્યુનિકેશન એરર 3</value>
+  </data>
+	<data name="Encoder normal communication error 1" xml:space="preserve">
+    <value>એન્કોડર સામાન્ય કોમ્યુનિકેશન એરર 1</value>
+  </data>
+	<data name="Encoder normal communication error 2" xml:space="preserve">
+    <value>એન્કોડર સામાન્ય કોમ્યુનિકેશન એરર 2</value>
+  </data>
+	<data name="Main circuit error" xml:space="preserve">
+    <value>મુખ્ય સર્કિટ એરર</value>
+  </data>
+	<data name="Regenerative error" xml:space="preserve">
+    <value>રીજનરેટિવ એરર</value>
+  </data>
+	<data name="Overspeed" xml:space="preserve">
+    <value>ઓવરસ્પીડ</value>
+  </data>
+	<data name="Overcurrent" xml:space="preserve">
+    <value>ઓવરકરન્ટ</value>
+  </data>
+	<data name="Overvoltage" xml:space="preserve">
+    <value>ઓવરવોલ્ટેજ</value>
+  </data>
+	<data name="Command frequency error" xml:space="preserve">
+    <value>કમાન્ડ ફ્રીક્વન્સી એરર</value>
+  </data>
+	<data name="Parameter error" xml:space="preserve">
+    <value>પેરામીટર એરર</value>
+  </data>
+	<data name="Servo motor overheat" xml:space="preserve">
+    <value>સર્વો મોટર ઓવરહીટ</value>
+  </data>
+	<data name="Overload 1" xml:space="preserve">
+    <value>ઓવરલોડ 1</value>
+  </data>
+	<data name="Overload 2" xml:space="preserve">
+    <value>ઓવરલોડ 2</value>
+  </data>
+	<data name="Error excessive" xml:space="preserve">
+    <value>એરર એક્સેસિવ</value>
+  </data>
+	<data name="Forced stop error" xml:space="preserve">
+    <value>ફોર્સડ સ્ટોપ એરર</value>
+  </data>
+	<data name="communication time-out error" xml:space="preserve">
+    <value>કોમ્યુનિકેશન ટાઈમ-આઉટ એરર</value>
+  </data>
+	<data name="Servo amplifier overheat warning" xml:space="preserve">
+    <value>સર્વો એમ્પ્લીફાયર ઓવરહીટ ચેતવણી</value>
+  </data>
+	<data name="Excessive regenerative warning" xml:space="preserve">
+    <value>એક્સેસિવ રીજનરેટિવ ચેતવણી</value>
+  </data>
+	<data name="Overload warning 1" xml:space="preserve">
+    <value>ઓવરલોડ ચેતવણી 1</value>
+  </data>
+	<data name="Servo forced stop warning" xml:space="preserve">
+    <value>સર્વો ફોર્સડ સ્ટોપ ચેતવણી</value>
+  </data>
+	<data name="Overload warning 2" xml:space="preserve">
+    <value>ઓવરલોડ ચેતવણી 2</value>
+  </data>
+	<data name="Output watt excess warning" xml:space="preserve">
+    <value>આઉટપુટ વોટ એક્સેસ ચેતવણી</value>
+  </data>
+</root>

@@ -1,0 +1,609 @@
+﻿@page
+@model FX5u_Web_HMI_App.Pages.PowerPointTableModel
+@{
+}
+
+<style>
+   .hmi-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        width: 100%;
+        background-color: #000080; /* Dark blue background */
+        color: #FFF;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        overflow: hidden;
+    }
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background-color: #e9ecef;
+        color: #343a40;
+    }
+
+    .container {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        max-width: 900px;
+        margin: 50px auto;
+        text-align: center;
+    }
+
+    h1 {
+        color: #007bff;
+        margin-bottom: 30px;
+    }
+
+    .status-message {
+        margin-top: 25px;
+        padding: 12px;
+        border-radius: 5px;
+        font-weight: 500;
+        font-size: 1.1em;
+        border: 1px solid;
+    }
+
+    .status-connected {
+        background-color: #d4edda;
+        color: #155724;
+        border-color: #c3e6cb;
+    }
+
+    .status-disconnected, .error-message, .write-status.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border-color: #f5c6cb;
+    }
+
+    .error-message, .write-status.error {
+        padding: 12px;
+        margin-top: 15px;
+        border-radius: 5px;
+        font-weight: 500;
+        text-align: left;
+    }
+
+    input[type="number"] {
+        text-align: right;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        font-size: 1.05em;
+        box-sizing: border-box;
+    }
+
+    .read-only-value {
+        font-weight: bold;
+        color: #0056b3;
+        text-align: right;
+        padding: 10px;
+        font-size: 1.05em;
+        display: block;
+        min-height: 42.5px;
+    }
+
+    .write-status {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 5px;
+        font-weight: 500;
+        text-align: left;
+        min-height: 1.5em;
+    }
+
+        .write-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+    .data-table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+        .data-table th, .data-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .data-table th, .data-table .row-label {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .data-table .row-label {
+            text-align: left;
+        }
+
+    .register-item {
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+    }
+
+        .register-item label {
+            flex: 0 0 250px;
+            margin-right: 15px;
+            font-weight: 600;
+            color: #5a6268;
+            text-align: left;
+        }
+
+        .register-item input, .register-item .read-only-value {
+            flex-grow: 1;
+        }
+
+    .hmi-btn {
+        flex-grow: 1;
+        padding: 15px;
+        font-size: 1.1em;
+        font-weight: bold;
+        color: white;
+        border: 2px solid #343a40;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, visibility 0.3s ease;
+    }
+
+    .btn-green {
+        background-color: #28a745;
+    }
+
+    .btn-red {
+        background-color: #dc3545;
+    }
+
+    .btn-blue {
+        background-color: #007bff;
+    }
+
+    .button-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        gap: 10px;
+        margin-top: 20px;
+    }
+</style>
+
+<div class="container text-center">
+    <h1>Power Point Table</h1>
+    @Html.AntiForgeryToken()
+
+    <div class="status-message" id="connectionStatus"></div>
+    <div class="error-message" id="errorMessage" style="display: none;"></div>
+    <div class="main-button-container">
+        <button class="hmi-btn hmi-interactive-btn btn-green" id="btn-out">OUT START</button>
+        <button class="hmi-btn hmi-interactive-btn btn-green" id="btn-rst">RESET</button>
+    </div>
+
+    <partial name="Shared/_PowerPointTablePartial" model="Model" />
+    <div class="write-status" id="writeStatusMessage"></div>
+    <div>
+        <div class="register-item"><label>CURRENT POSITION (mm):</label><span class="read-only-value" id="CurrentPosition"></span></div>
+
+    </div>
+    <div class="main-button-container">
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-home">HOME</button>
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-alm">ALARM</button>
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-prev">PREV</button>
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-next">NEXT</button>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const writeStatusMessageDiv = document.getElementById('writeStatusMessage');
+        let registerValues = {
+       
+            PointControlRegisterD89: 0,
+            PointControlRegisterD91: 0,
+            PointControlRegisterD1001: 0,
+            PointControlRegisterD2: 0,
+            PointControlRegisterD3: 0,
+            PointControlRegisterD4: 0,
+            PointControlRegisterD5: 0,
+            PointControlRegisterD1402: 0,
+            StatusBits:0
+
+            // Add other control registers here if needed
+        };
+
+    const fieldsToDivideBy10 = [
+            "PositionWrite1", "CurrentPosition"
+
+        ];
+
+        const buttonConfig = {
+        'btn-out': {
+
+            actions: [
+                { type: 'toggle', register: 'PointControlRegisterD1402', position: 1 },
+                { type: 'set', register: 'PointControlRegisterD5', position: 5 },
+                { type: 'set', register: 'PointControlRegisterD89', position: 1 },
+
+            ],
+            momentarySideEffect: { address: 'M500' }
+
+            },
+            'btn-rst': {
+
+            actions: [
+                { type: 'momentary', register: 'PointControlRegisterD3', position: 6 },
+                { type: 'reset', register: 'PointControlRegisterD1001', position: 0 },
+                { type: 'reset', register: 'PointControlRegisterD1001', position: 1 },
+                { type: 'reset', register: 'PointControlRegisterD1001', position: 2 },
+                { type: 'reset', register: 'PointControlRegisterD1001', position: 3 },
+                { type: 'reset', register: 'PointControlRegisterD1001', position: 4 },
+                { type: 'reset', register: 'PointControlRegisterD1001', position: 5 },
+                { type: 'reset', register: 'PointControlRegisterD1001', position: 6 },
+                { type: 'reset', register: 'PointControlRegisterD1001', position: 7 },
+                { type: 'reset', register: 'PointControlRegisterD2', position: 3 },
+                { type: 'reset', register: 'PointControlRegisterD2', position: 4 },
+                { type: 'reset', register: 'PointControlRegisterD2', position: 5 },
+                { type: 'reset', register: 'PointControlRegisterD2', position: 6 },
+                { type: 'reset', register: 'PointControlRegisterD2', position: 7 },
+
+            ],
+             momentarySideEffect: { address: 'M501' },
+             redirect: '/Index'
+             
+            },
+        'btn-home': {
+                actions: [
+                { type: 'reset', register: 'PointControlRegisterD3', position: 1 },
+                { type: 'reset', register: 'PointControlRegisterD3', position: 3 },
+                { type: 'reset', register: 'PointControlRegisterD3', position: 6 },
+                { type: 'reset', register: 'PointControlRegisterD4', position: 0 },
+                { type: 'reset', register: 'PointControlRegisterD4', position: 1 },
+                { type: 'reset', register: 'PointControlRegisterD4', position: 2 },
+                { type: 'reset', register: 'PointControlRegisterD4', position: 3 },
+                { type: 'reset', register: 'PointControlRegisterD4', position: 4 },
+                { type: 'reset', register: 'PointControlRegisterD4', position: 5 },
+                { type: 'reset', register: 'PointControlRegisterD91', position: 0 },
+                { type: 'reset', register: 'PointControlRegisterD89', position: 1 },
+                { type: 'reset', register: 'PointControlRegisterD2', position: 3 },
+                { type: 'reset', register: 'PointControlRegisterD2', position: 4 },
+                { type: 'reset', register: 'PointControlRegisterD2', position: 5 },
+                { type: 'reset', register: 'PointControlRegisterD2', position: 6 },
+                { type: 'reset', register: 'PointControlRegisterD2', position: 7 },
+                { type: 'reset', register: 'PointControlRegisterD5', position: 5 },
+                { type: 'reset', register: 'PointControlRegisterD1001', position: 4 },
+                { type: 'reset', register: 'PointControlRegisterD1402', position: 5 },
+                ],
+                momentarySideEffect: { address: 'M501' },
+                conditionBit: { register: 'StatusBits', position: 0 },
+                visibilityBit: { register: 'PointControlRegisterD89', position: 1 },            
+               redirect: '/Index'
+            },
+        'btn-alm': {
+                actions: [
+                  { type: 'reset', register: 'PointControlRegisterD89', position: 1 },
+                ],
+               redirect: '/Alarms'
+            },
+        'btn-next': {
+                actions: [ ],
+               redirect: '/HomePointTable'
+            },
+        'btn-prev': {
+                actions: [ ],
+               redirect: '/PointTable4'
+            }
+        }
+        const allRegisterIds = @Html.Raw(Json.Serialize(Model.GetType().GetProperties().Where(p => p.IsDefined(typeof(Microsoft.AspNetCore.Mvc.BindPropertyAttribute), false) && p.Name != "ConnectionStatus" && p.Name != "ErrorMessage").Select(p => p.Name)));
+
+        function updateUI(data) {
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.textContent = `Connection Status: ${data.connectionStatus}`;
+            statusDiv.className = `status-message ${data.connectionStatus.toLowerCase().includes('connected') ? 'status-connected' : 'status-disconnected'}`;
+
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.style.display = data.errorMessage ? 'block' : 'none';
+            errorDiv.innerHTML = data.errorMessage ? `<strong>Error:</strong> ${data.errorMessage}` : '';
+
+        allRegisterIds.forEach(id => {
+                                       const element = document.getElementById(id);
+                                       const dataKey = id.charAt(0).toLowerCase() + id.slice(1);
+                                       if (!element || data[dataKey] === undefined) return;
+
+                                       let displayValue = data[dataKey];
+                                       // Check if this field needs special formatting for display
+                                       if (fieldsToDivideBy10.includes(id)) {
+                                           displayValue = (data[dataKey] / 440.0).toFixed(1);
+                                       }
+
+                                       if (element.tagName === 'INPUT' && document.activeElement !== element) {
+                                           element.value = displayValue;
+                                       } else if (element.tagName === 'SPAN') {
+                                           element.textContent = displayValue;
+                                       }
+
+                                   });
+                   for (const key in registerValues) {
+            const dataKey = key.charAt(0).toLowerCase() + key.slice(1);
+            if (data[dataKey] !== undefined) {
+                registerValues[key] = data[dataKey];
+            }
+           }
+           updateButtonStyles();
+        }
+
+                // Add these two functions to your script
+        async function performActionsAndAwait(actions) {
+                     // A Map to store the final calculated value for each register we need to update.
+                     const registersToUpdate = new Map();
+
+                     // Step 1: Loop through all actions to calculate the final value for each register.
+                     for (const action of actions) {
+                         if (action.type === 'momentary') continue; // Skip momentary actions
+
+                         const registerName = action.register;
+
+                         // Get the current value, either from our map if we've already modified it,
+                         // or from the global state if this is the first time we're seeing this register.
+                         let currentValue = registersToUpdate.has(registerName)
+                             ? registersToUpdate.get(registerName)
+                             : registerValues[registerName];
+
+                         let newValue = currentValue;
+                         if (action.type === 'toggle') {
+                             newValue ^= (1 << action.position);
+                         } else if (action.type === 'set') {
+                             newValue |= (1 << action.position);
+                         } else if (action.type === 'reset') {
+                             newValue &= ~(1 << action.position);
+                         }
+
+                         // Store the newly calculated value back in our map.
+                         registersToUpdate.set(registerName, newValue);
+                     }
+
+                     // Step 2: Now that all calculations are done, send one write command for each register.
+                     const writePromises = [];
+                     for (const [registerName, finalValue] of registersToUpdate) {
+                         writePromises.push(writeRegister(registerName, finalValue.toString()));
+                     }
+
+                     // Wait for all the unique write commands to complete.
+                     return Promise.all(writePromises);
+                 }
+
+        function updateButtonStyles() {
+            for (const buttonId in buttonConfig) {
+                const config = buttonConfig[buttonId];
+                const button = document.getElementById(buttonId);
+                if (!button) continue;
+
+                if (config.actions && config.actions.length > 0) {
+                    const action = config.actions.find(a => a.type === 'toggle' || a.type === 'momentary');
+                    if (action) {
+                        const isBitOn = (registerValues[action.register] >> action.position) & 1;
+                        button.classList.toggle('btn-green', isBitOn);
+                        button.classList.toggle('btn-red', !isBitOn);
+                    } else {
+                        button.classList.add('btn-red');
+                    }
+                }
+
+                if (config.visibilityBit) {
+                    const isVisible = (registerValues[config.visibilityBit.register] >> config.visibilityBit.position) & 1;
+                    button.style.visibility = isVisible ? 'visible' : 'hidden';
+                }
+            }
+        }
+        async function fetchData() {
+            try {
+                const response = await fetch('?handler=ReadRegisters');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                updateUI(data);
+            } catch (error) {
+                updateUI({ connectionStatus: "Fetch Error", errorMessage: error.message });
+            }
+        }
+
+        // --- THIS FUNCTION IS NOW CORRECTED ---
+            async function writeRegister(name, value) {
+                    writeStatusMessageDiv.textContent = `Sending new value for ${name}...`;
+                    writeStatusMessageDiv.className = 'write-status';
+
+                    let valueToSend = value;
+                    if (fieldsToDivideBy10.includes(name)) {
+                        const floatValue = parseFloat(value);
+                        if (!isNaN(floatValue)) {
+                            valueToSend = Math.round(floatValue * 440).toString();
+                        } else {
+                            writeStatusMessageDiv.textContent = `Invalid number format for ${name}.`;
+                            writeStatusMessageDiv.className = 'write-status error';
+                            return;
+                        }
+                    }
+
+                    try {
+                        const response = await fetch(`?handler=WriteRegister`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                // CORRECTED: This selector now finds the token anywhere on the page
+                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                            },
+                            body: JSON.stringify({ RegisterName: name, Value: valueToSend })
+                        });
+
+                        if (!response.ok) throw new Error(`Server responded with status ${response.status}`);
+
+                        const result = await response.json();
+                        writeStatusMessageDiv.textContent = result.message;
+                        writeStatusMessageDiv.className = `write-status ${result.status.toLowerCase()}`;
+                        await fetchData();
+                    } catch (error) {
+                        writeStatusMessageDiv.textContent = `Write failed: ${error.message}`;
+                        writeStatusMessageDiv.className = 'write-status error';
+                    }
+                }
+
+         async function writeBit(address, value) {
+            // This function doesn't need to return a complex promise,
+            // as it's for a quick side-effect.
+            try {
+                await fetch(`?handler=WriteBit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ Address: address, Value: value })
+                });
+            } catch (error) {
+                console.error(`Write bit failed for ${address}:`, error);
+            }
+        }
+        async function fetchModbusData() {
+                   try {
+                       const response = await fetch('?handler=ReadRegisters');
+                       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                       const data = await response.json();
+                       updateUI(data);
+                   } catch (error) {
+                       updateUI({ connectionStatus: "Fetch Error", errorMessage: error.message });
+                   }
+               }
+ document.addEventListener('DOMContentLoaded', () => {
+            // Event listener for writable input fields... (this part is correct)
+            allRegisterIds.forEach(id => {
+                const input = document.getElementById(id);
+                if (input && input.tagName === 'INPUT') {
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            input.blur();
+                          //  writeRegister(id, input.value);
+                        }
+                    });
+                           input.addEventListener('change', () => {
+                            writeRegister(id, input.value);
+                    });
+                }
+            });
+
+            // --- THIS IS THE CORRECT, UNIFIED EVENT HANDLER ---
+                   document.querySelectorAll('.hmi-interactive-btn').forEach(button => {
+                       const config = buttonConfig[button.id];
+                       if (!config) return;
+
+                       const isPrimaryActionMomentary = config.actions.some(a => a.type === 'momentary');
+
+                       if (isPrimaryActionMomentary) {
+                           const action = config.actions.find(a => a.type === 'momentary');
+
+                           // --- Mousedown event handler (PRESS) ---
+                           const pressAction = async () => {
+                               // --- THIS IS THE CORRECTED LOGIC ---
+                               // First, check the condition bit before doing anything
+                               if (config.conditionBit) {
+                                   const isConditionBitHigh = (registerValues[config.conditionBit.register] >> config.conditionBit.position) & 1;
+                                   let isBlocked = false;
+
+                                   if (config.conditionBehavior === 'allowOnHigh') {
+                                       if (!isConditionBitHigh) isBlocked = true; // Block if bit is LOW
+                                   } else {
+                                       if (isConditionBitHigh) isBlocked = true; // Default: Block if bit is HIGH
+                                   }
+
+                                   if (isBlocked) {
+                                       writeStatusMessageDiv.textContent = `Action for ${button.id} prevented: Condition not met.`;
+                                       writeStatusMessageDiv.className = 'write-status error';
+                                       button.setAttribute('data-is-blocked', 'true'); // Mark as blocked
+                                       return; // Stop the action
+                                   }
+                               }
+
+                               // If not blocked, proceed with the action
+                               button.setAttribute('data-is-blocked', 'false');
+                               let newValue = registerValues[action.register] | (1 << action.position);
+                               await writeRegister(action.register, newValue.toString());
+                               await fetchModbusData();
+                           };
+
+                           // --- Mouseup event handler (RELEASE) ---
+                           const releaseAction = async () => {
+                               // Only perform the release action if the press action was not blocked
+                               if (button.getAttribute('data-is-blocked') === 'true') {
+                                   return;
+                               }
+                               let newValue = registerValues[action.register] & ~(1 << action.position);
+                               await writeRegister(action.register, newValue.toString());
+                               await fetchModbusData();
+                           };
+
+                           button.addEventListener('mousedown', pressAction);
+                           button.addEventListener('mouseup', releaseAction);
+                           button.addEventListener('mouseleave', releaseAction);
+                           button.addEventListener('touchstart', (e) => { e.preventDefault(); pressAction(); });
+                           button.addEventListener('touchend', (e) => { e.preventDefault(); releaseAction(); });
+
+                       } else {
+                           // Logic for standard CLICK buttons
+                           button.addEventListener('click', async () => {
+                               try {
+                                   if (config.conditionBit) {
+                                       const isConditionBitHigh = (registerValues[config.conditionBit.register] >> config.conditionBit.position) & 1;
+                                       let isBlocked = false;
+                                       if (config.conditionBehavior === 'allowOnHigh') {
+                                           if (!isConditionBitHigh) isBlocked = true;
+                                       } else {
+                                           if (isConditionBitHigh) isBlocked = true;
+                                       }
+                                       if (isBlocked) {
+                                           writeStatusMessageDiv.textContent = `Action for ${button.id} prevented: Condition not met.`;
+                                           writeStatusMessageDiv.className = 'write-status error';
+                                           return;
+                                       }
+                                   }
+                                   await performActionsAndAwait(config.actions);
+                                   await fetchModbusData();
+                                   if (config.redirect) {
+                                       window.location.href = config.redirect;
+                                   }
+                               } catch (error) {
+                                   console.error("Write failed:", error);
+                                   writeStatusMessageDiv.textContent = `Error: ${error.message}`;
+                                   writeStatusMessageDiv.className = 'write-status error';
+                               }
+                           });
+                       }
+
+                       // Logic for the MOMENTARY SIDE-EFFECT
+                       if (config.momentarySideEffect) {
+                           const address = config.momentarySideEffect.address;
+                           const press = async () => {
+                               await writeBit(address, true);
+                               await fetchModbusData();
+                           };
+                           const release = async () => {
+                               await writeBit(address, false);
+                               await fetchModbusData();
+                           };
+                           button.addEventListener('mousedown', press);
+                           button.addEventListener('mouseup', release);
+                           button.addEventListener('mouseleave', release);
+                           button.addEventListener('touchstart', (e) => { e.preventDefault(); press(); });
+                           button.addEventListener('touchend', (e) => { e.preventDefault(); release(); });
+                       }
+                   });
+
+            // Initial data fetch and set up recurring update
+            fetchData();
+            setInterval(fetchData, 1000);
+        });
+    </script>
+}

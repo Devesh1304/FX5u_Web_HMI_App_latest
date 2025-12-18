@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+	<xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+		<xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+		<xsd:element name="root" msdata:IsDataSet="true">
+			<xsd:complexType>
+				<xsd:choice maxOccurs="unbounded">
+					<xsd:element name="metadata">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" />
+							</xsd:sequence>
+							<xsd:attribute name="name" use="required" type="xsd:string" />
+							<xsd:attribute name="type" type="xsd:string" />
+							<xsd:attribute name="mimetype" type="xsd:string" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="assembly">
+						<xsd:complexType>
+							<xsd:attribute name="alias" type="xsd:string" />
+							<xsd:attribute name="name" type="xsd:string" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="data">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+								<xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+							<xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+							<xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+							<xsd:attribute ref="xml:space" />
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="resheader">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+							</xsd:sequence>
+							<xsd:attribute name="name" type="xsd:string" use="required" />
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:choice>
+			</xsd:complexType>
+		</xsd:element>
+	</xsd:schema>
+	<resheader name="resmimetype">
+		<value>text/microsoft-resx</value>
+	</resheader>
+	<resheader name="version">
+		<value>2.0</value>
+	</resheader>
+	<resheader name="reader">
+		<value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+	<resheader name="writer">
+		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+	</resheader>
+
+	<data name="Jog Mode Screen" xml:space="preserve">
+    <value>જોગ મોડ સ્ક્રીન</value>
+  </data>
+	<data name="INSTANT. TORQUE (%):" xml:space="preserve">
+    <value>ઇન્સ્ટન્ટ ટોર્ક (%):</value>
+  </data>
+	<data name="CURRENT POSITION (mm):" xml:space="preserve">
+    <value>વર્તમાન પોઝિશન (mm):</value>
+  </data>
+	<data name="POSITION AT EMG. (mm):" xml:space="preserve">
+    <value>ઇમરજન્સી પોઝિશન (mm):</value>
+  </data>
+	<data name="SERVO JOG SPEED:" xml:space="preserve">
+    <value>સર્વો જોગ સ્પીડ:</value>
+  </data>
+	<data name="ACTUATOR IN SET TIME:" xml:space="preserve">
+    <value>એક્ટ્યુએટર ઇન સેટ ટાઇમ:</value>
+  </data>
+	<data name="ACTUATOR OUT SET TIME:" xml:space="preserve">
+    <value>એક્ટ્યુએટર આઉટ સેટ ટાઇમ:</value>
+  </data>
+	<data name="JOG MODE" xml:space="preserve">
+    <value>જોગ મોડ</value>
+  </data>
+	<data name="IN" xml:space="preserve">
+    <value>ઇન</value>
+  </data>
+	<data name="OUT" xml:space="preserve">
+    <value>આઉટ</value>
+  </data>
+	<data name="ACTUATOR" xml:space="preserve">
+    <value>એક્ટ્યુએટર</value>
+  </data>
+	<data name="EMERGENCY" xml:space="preserve">
+    <value>ઇમરજન્સી</value>
+  </data>
+	<data name="ACTUATOR IN (Y4):" xml:space="preserve">
+    <value>એક્ટ્યુએટર ઇન (Y4):</value>
+  </data>
+	<data name="ACTUATOR OUT (Y5):" xml:space="preserve">
+    <value>એક્ટ્યુએટર આઉટ (Y5):</value>
+  </data>
+	<data name="HOME" xml:space="preserve">
+    <value>હોમ</value>
+  </data>
+</root>
