@@ -525,11 +525,14 @@ namespace FX5u_Web_HMI_App.BackgroundServices
                 _logger.LogError(ex, "Failed to log PLC data to database.");
             }
         }
+        // --- REPLACE YOUR EXISTING METHOD WITH THIS ---
         private int GetInt32(short[] data, int startIndex)
         {
-            if (startIndex + 1 >= data.Length) return 0;         
-        
-            return (int)(data[startIndex] + (data[startIndex + 1] << 16));
+            if (startIndex + 1 >= data.Length) return 0;
+
+            // 1. Cast the lower short to ushort to treat bits as 0-65535 (unsigned).
+            // 2. Use bitwise OR (|) instead of addition (+) for cleaner bit manipulation.
+            return (int)((ushort)data[startIndex] | (data[startIndex + 1] << 16));
         }
     }
  }
