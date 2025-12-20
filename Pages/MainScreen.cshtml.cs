@@ -156,16 +156,30 @@ namespace FX5u_Web_HMI_App.Pages
 
             try
             {
-                if (!_writableWordRegisters.Contains(request.RegisterName))
-                    throw new KeyNotFoundException($"Writable register '{request.RegisterName}' not found.");
+                // --- FIX START: Map Friendly Name to PLC Address ---
+                string targetAddress = request.RegisterName;
+
+                // If the frontend sent "ContOffTime", change it to "D3520"
+                if (targetAddress == "ContOffTime")
+                {
+                    targetAddress = "D3520";
+                }
+                // --- FIX END ---
+
+                // Check if the RESOLVED address (D3520) is in the whitelist
+                if (!_writableWordRegisters.Contains(targetAddress))
+                    throw new KeyNotFoundException($"Writable register '{request.RegisterName}' is not allowed.");
 
                 if (!short.TryParse(request.Value, out var intValue))
                     throw new FormatException("Value could not be parsed as a short integer.");
 
-                var result = await _slmpService.WriteAsync(request.RegisterName, intValue);
+                // Write to the ADDRESS (D3520), not the name
+                var result = await _slmpService.WriteAsync(targetAddress, intValue);
+
                 if (!result.IsSuccess) throw new Exception(result.Message);
 
                 return new JsonResult(new { status = "Success", message = $"Wrote {intValue} to {request.RegisterName}." });
+
             }
             catch (Exception ex)
             {
