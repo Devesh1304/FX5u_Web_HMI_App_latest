@@ -1,3 +1,19 @@
+/* --- 1. Load Local Font (Offline Support) --- */
+@font-face {
+    font-family: 'Noto Sans Gujarati';
+    /* This path is relative to wwwroot/css/ */
+    src: url('../fonts/NotoSansGujarati.ttf') format('truetype');
+    font-weight: 100 900; /* Supports the variable weight range */
+    font-style: normal;
+}
+
+/* --- 2. Apply it globally --- */
+body {
+    /* 'Noto Sans Gujarati' must be first */
+    font-family: 'Noto Sans Gujarati', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin-bottom: 60px;
+    background-color: #f0f2f5;
+}
 html {
   font-size: 14px;
 }
