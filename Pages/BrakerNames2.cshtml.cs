@@ -112,22 +112,71 @@ namespace FX5u_Web_HMI_App.Pages
         }
 
         // ---------- Gujarati (DB Ids 21..40) ----------
-        public JsonResult OnGetGetGujarati()
+        // --- UPDATED METHOD: Read PLC -> Check Translation -> Return Result ---
+        public async Task<JsonResult> OnGetGetGujarati()
         {
-            var values = Enumerable.Range(1, 20)
-                .Select(i => new
+            try
+            {
+                // 1. Read all 20 English names from PLC (Page 2: D4200 start, 200 words total)
+                var read = await _slmpService.ReadInt16BlockAsync(BASE_D, 200);
+                if (!read.IsSuccess)
+                    return new JsonResult(new { error = read.Message });
+
+                var words = read.Content;
+                var resultDict = new Dictionary<string, string>();
+
+                // 2. Fetch all translations to memory for Case-Insensitive lookup
+                var allTrans = await _db.NameTranslations.ToListAsync();
+                bool anyAdded = false;
+
+                for (int i = 0; i < 20; i++)
                 {
-                    Key = $"BrakerName{i}",
-                    Val = _db.LocaleBreakerNames
-                             .Where(x => x.Id == (20 + i) && x.Lang == "gu") // Offset by 20
-                             .Select(x => x.Text)
-                             .FirstOrDefault() ?? string.Empty
-                })
-                .ToDictionary(x => x.Key, x => x.Val);
+                    // A. Decode PLC English Value
+                    var slice = new ArraySegment<short>(words, i * WORDS_PER_NAME, WORDS_PER_NAME);
+                    string enVal = DecodeAscii(slice).Trim();
+                    string key = $"BrakerName{i + 1}"; // Matches frontend IDs (1..20 on this page)
 
-            return new JsonResult(new { values });
+                    // B. Auto-Seed: Add to DB if English key is missing
+                    if (!string.IsNullOrEmpty(enVal))
+                    {
+                        bool exists = allTrans.Any(t => t.En.Trim().Equals(enVal, StringComparison.OrdinalIgnoreCase));
+                        if (!exists)
+                        {
+                            var newRow = new NameTranslation { En = enVal, Gu = "" };
+                            _db.NameTranslations.Add(newRow);
+                            allTrans.Add(newRow); // Add to local list
+                            anyAdded = true;
+                        }
+                    }
+
+                    // C. Determine Display Value
+                    // Start with English (Step 4 Fallback)
+                    string displayVal = enVal;
+
+                    // Check NameTranslations (Step 2 Priority) using Case-Insensitive match
+                    var match = allTrans.FirstOrDefault(t => t.En.Trim().Equals(enVal, StringComparison.OrdinalIgnoreCase));
+
+                    if (match != null && !string.IsNullOrWhiteSpace(match.Gu))
+                    {
+                        displayVal = match.Gu;
+                    }
+
+                    // NOTE: "Step 3" (LocaleBreakerNames fallback) is strictly skipped.
+
+                    resultDict[key] = displayVal;
+                }
+
+                // Save new keys if any were added
+                if (anyAdded) await _db.SaveChangesAsync();
+
+                return new JsonResult(new { values = resultDict });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "OnGetGetGujarati (Page 2) failed");
+                return new JsonResult(new { error = ex.Message });
+            }
         }
-
         public class SetGujaratiRequest
         {
             public string Name { get; set; } = "";

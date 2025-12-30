@@ -83,45 +83,77 @@ namespace FX5u_Web_HMI_App.Pages
         }
 
         // ============= Localized Breaker Names (DB Fallback) =============
+        // --- UPDATED METHOD: Read PLC -> Check Translation -> Return Result ---
         public async Task<JsonResult> OnGetReadBreakerTypesLocalized(string lang)
         {
             try
             {
-                // Detect lang from culture if parameter missing
+                // 1. Default to English if language is not provided or not Gujarati
                 if (string.IsNullOrEmpty(lang))
                 {
                     lang = CultureInfo.CurrentUICulture.Name.StartsWith("gu", StringComparison.OrdinalIgnoreCase) ? "gu" : "en";
                 }
 
-                var englishKeys = await ReadBreakerTypesEnAsync();
+                // Read English Names directly from PLC (Helper method you already have)
+                var en = await ReadBreakerTypesEnAsync();
 
+                // If not Gujarati, return English immediately
                 if (!string.Equals(lang, "gu", StringComparison.OrdinalIgnoreCase))
-                    return new JsonResult(new { success = true, names = englishKeys });
+                    return new JsonResult(new { success = true, names = en });
 
-                // 1. Auto-Seed: Add missing English keys to DB
-                foreach (var key in englishKeys.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct())
+                // 2. FETCH TRANSLATIONS (Case-Insensitive)
+                var allTranslations = await _db.NameTranslations.ToListAsync();
+
+                // 3. Auto-Seed Missing Keys (Case Insensitive)
+                bool anyAdded = false;
+                foreach (var key in en.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct())
                 {
-                    if (!await _db.NameTranslations.AnyAsync(t => t.En == key))
-                        _db.NameTranslations.Add(new NameTranslation { En = key, Gu = "" });
+                    var cleanKey = key.Trim();
+                    // Check existence ignoring case
+                    bool exists = allTranslations.Any(t => t.En.Trim().Equals(cleanKey, StringComparison.OrdinalIgnoreCase));
+
+                    if (!exists)
+                    {
+                        var newRow = new NameTranslation { En = cleanKey, Gu = "" };
+                        _db.NameTranslations.Add(newRow);
+                        allTranslations.Add(newRow); // Add to local list
+                        anyAdded = true;
+                    }
                 }
-                await _db.SaveChangesAsync();
+                if (anyAdded) await _db.SaveChangesAsync();
 
-                // 2. Map EN -> GU
-                var keys = englishKeys.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
-                var trans = await _db.NameTranslations.Where(t => keys.Contains(t.En)).ToListAsync();
+                // 4. Create Dictionary (Case Insensitive Lookup)
+                var dict = allTranslations
+                    .GroupBy(t => t.En.Trim())
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.First().Gu ?? string.Empty,
+                        StringComparer.OrdinalIgnoreCase
+                    );
 
+                // 5. Map Names (Directly to Gujarati OR Fallback to English)
                 var outNames = new List<string>(4);
-                foreach (var en in englishKeys)
+                foreach (var enName in en)
                 {
-                    var hit = trans.FirstOrDefault(t => t.En == en);
-                    outNames.Add(!string.IsNullOrWhiteSpace(hit?.Gu) ? hit.Gu : en);
+                    var k = (enName ?? "").Trim();
+                    // Try to find Gujarati translation
+                    if (dict.TryGetValue(k, out var gu) && !string.IsNullOrWhiteSpace(gu))
+                    {
+                        outNames.Add(gu); // Found translation
+                    }
+                    else
+                    {
+                        outNames.Add(k); // Not found? Return English (Step 4)
+                    }
                 }
+
+                // NOTE: "Step 3" (LocaleBreakerNames positional fallback) is strictly skipped.
 
                 return new JsonResult(new { success = true, names = outNames });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "ReadBreakerTypesLocalized failed.");
+                _logger.LogError(ex, "ReadBreakerTypesLocalized failed");
                 return new JsonResult(new { success = false, message = ex.Message });
             }
         }

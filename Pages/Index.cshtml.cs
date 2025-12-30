@@ -116,57 +116,68 @@ namespace FX5u_Web_HMI_App.Pages
         {
             try
             {
-                // If param is missing, use current culture
+                // 1. Default to English if language is not Gujarati
                 if (string.IsNullOrEmpty(lang))
                 {
                     lang = CultureInfo.CurrentUICulture.Name.StartsWith("gu", StringComparison.OrdinalIgnoreCase) ? "gu" : "en";
                 }
 
+                // Read English Names from PLC
                 var en = await ReadBreakerTypesEnAsync();
 
                 // If not Gujarati, return English immediately
                 if (!string.Equals(lang, "gu", StringComparison.OrdinalIgnoreCase))
                     return new JsonResult(new { success = true, names = en });
 
-                // 1. Auto-Seed: Add missing English keys to DB
+                // 2. FETCH TRANSLATIONS (Case-Insensitive Match)
+                // We fetch all translations to ensure we can match "ABB" to "abb"
+                var allTranslations = await _db.NameTranslations.ToListAsync();
+
+                // 3. Auto-Seed Missing Keys
+                bool anyAdded = false;
                 foreach (var key in en.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct())
                 {
-                    if (!await _db.NameTranslations.AnyAsync(t => t.En == key))
-                        _db.NameTranslations.Add(new NameTranslation { En = key, Gu = "" });
+                    var cleanKey = key.Trim();
+                    // Check if key exists (Ignoring Case)
+                    bool exists = allTranslations.Any(t => t.En.Trim().Equals(cleanKey, StringComparison.OrdinalIgnoreCase));
+
+                    if (!exists)
+                    {
+                        var newEntry = new NameTranslation { En = cleanKey, Gu = "" };
+                        _db.NameTranslations.Add(newEntry);
+                        allTranslations.Add(newEntry);
+                        anyAdded = true;
+                    }
                 }
-                await _db.SaveChangesAsync();
+                if (anyAdded) await _db.SaveChangesAsync();
 
-                // 2. Map EN -> GU
-                var keys = en.Where(s => !string.IsNullOrWhiteSpace(s)).Distinct().ToList();
-                var maps = await _db.NameTranslations.Where(t => keys.Contains(t.En)).ToListAsync();
-                var dict = maps.ToDictionary(t => t.En, t => t.Gu ?? string.Empty, StringComparer.Ordinal);
+                // 4. Create Dictionary
+                var dict = allTranslations
+                    .GroupBy(t => t.En.Trim())
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.First().Gu ?? string.Empty,
+                        StringComparer.OrdinalIgnoreCase
+                    );
 
-                var outNames = en.Select(s => dict.TryGetValue(s ?? string.Empty, out var gu) ? gu : string.Empty).ToArray();
+                // 5. Map Names (Directly to Gujarati OR Fallback to English)
+                var outNames = en.Select(s => {
+                    var k = (s ?? "").Trim();
+                    // Try to find Gujarati translation
+                    if (dict.TryGetValue(k, out var gu) && !string.IsNullOrWhiteSpace(gu))
+                    {
+                        return gu; // Found translation
+                    }
+                    return k; // Not found? Return original English (Step 4)
+                }).ToArray();
 
-                // 3. Fallback: LocaleBreakerNames (Static ID 1-4)
-                if (outNames.Any(x => string.IsNullOrWhiteSpace(x)))
-                {
-                    var guFallback = await _db.LocaleBreakerNames
-                        .Where(x => x.Lang == "gu" && x.Id >= 1 && x.Id <= 4)
-                        .OrderBy(x => x.Id)
-                        .Select(x => x.Text)
-                        .ToListAsync();
-                    while (guFallback.Count < 4) guFallback.Add(string.Empty);
-
-                    for (int i = 0; i < 4; i++)
-                        if (string.IsNullOrWhiteSpace(outNames[i]) && !string.IsNullOrWhiteSpace(guFallback[i]))
-                            outNames[i] = guFallback[i];
-                }
-
-                // 4. Final Fallback: English
-                for (int i = 0; i < 4; i++)
-                    if (string.IsNullOrWhiteSpace(outNames[i])) outNames[i] = en[i] ?? string.Empty;
+                // (Step 3 "LocaleBreakerNames" Block has been deleted)
 
                 return new JsonResult(new { success = true, names = outNames });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "OnGetReadBreakerTypesLocalized failed");
+                _logger.LogError(ex, "Localization failed");
                 return new JsonResult(new { success = false, message = ex.Message });
             }
         }

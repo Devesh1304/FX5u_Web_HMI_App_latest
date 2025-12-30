@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using FX5u_Web_HMI_App.Data;
+// Added for CultureInfo
+using System.Globalization;
 
 namespace FX5u_Web_HMI_App.Pages
 {
@@ -22,7 +24,7 @@ namespace FX5u_Web_HMI_App.Pages
         [BindProperty(SupportsGet = true)] public DateTime EndDate { get; set; }
         [BindProperty(SupportsGet = true)] public int ClientOffsetMinutes { get; set; }
 
-        // Language (GET-bound) - Used to translate breaker names
+        // Language (GET-bound)
         [BindProperty(SupportsGet = true)] public string Lang { get; set; } = "en";
 
         // Pagination (GET-bound)
@@ -42,7 +44,9 @@ namespace FX5u_Web_HMI_App.Pages
         {
             try
             {
-                // 1) Compute UTC window for querying
+                // ==============================================================================
+                // STEP 1: Compute UTC window (UNCHANGED)
+                // ==============================================================================
                 DateTime utcStart, utcEnd;
 
                 if (StartDate == DateTime.MinValue || EndDate == DateTime.MinValue)
@@ -62,12 +66,16 @@ namespace FX5u_Web_HMI_App.Pages
                     utcEnd = DateTime.SpecifyKind(EndDate.AddMinutes(ClientOffsetMinutes), DateTimeKind.Utc);
                 }
 
-                // 2) Query Data
+                // ==============================================================================
+                // STEP 2: Query Data (UNCHANGED)
+                // ==============================================================================
                 var query = _context.DataLogs
                     .Where(x => x.Timestamp >= utcStart && x.Timestamp <= utcEnd)
                     .OrderByDescending(x => x.Timestamp);
 
-                // 3) Pagination
+                // ==============================================================================
+                // STEP 3: Pagination (UNCHANGED)
+                // ==============================================================================
                 var total = await query.CountAsync();
                 TotalPages = Math.Max(1, (int)Math.Ceiling(total / (double)PageSize));
                 if (CurrentPage < 1) CurrentPage = 1;
@@ -78,7 +86,9 @@ namespace FX5u_Web_HMI_App.Pages
                     .Take(PageSize)
                     .ToListAsync();
 
-                // 4) Map to DTO & Convert UTC -> Local
+                // ==============================================================================
+                // STEP 4: Map to DTO & Convert UTC -> Local (UNCHANGED)
+                // ==============================================================================
                 int offset = ClientOffsetMinutes;
                 DataRows = page.Select(log =>
                 {
@@ -96,31 +106,50 @@ namespace FX5u_Web_HMI_App.Pages
                     };
                 }).ToList();
 
-                // 5) Apply Gujarati Translations if selected
-                // Logic: Look up the English descriptions in the DB and replace them if a translation exists.
+                // ==============================================================================
+                // STEP 5: Apply Gujarati Translations (MODIFIED FOR ROBUSTNESS)
+                // ==============================================================================
+                // Auto-detect language if not passed explicitly in URL
+                if (string.IsNullOrEmpty(Lang) || Lang == "en")
+                {
+                    Lang = CultureInfo.CurrentUICulture.Name.StartsWith("gu", StringComparison.OrdinalIgnoreCase) ? "gu" : "en";
+                }
+
                 if (string.Equals(Lang, "gu", StringComparison.OrdinalIgnoreCase) && DataRows.Count > 0)
                 {
+                    // 1. Get unique descriptions (Using OrdinalIgnoreCase to catch MAIN vs Main)
                     var keys = DataRows
                         .Select(r => r.BreakerDescription)
                         .Where(s => !string.IsNullOrWhiteSpace(s))
-                        .Distinct()
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
                         .ToList();
 
                     if (keys.Count > 0)
                     {
+                        // 2. Fetch from DB
+                        // We use .Contains() which maps to SQL IN (...). 
+                        // Note: SQL is usually case-insensitive by default, which is good here.
                         var trans = await _context.NameTranslations
                             .Where(t => keys.Contains(t.En))
                             .ToListAsync();
 
-                        var map = trans.ToDictionary(
-                            t => t.En ?? string.Empty,
-                            t => t.Gu ?? string.Empty,
-                            StringComparer.OrdinalIgnoreCase
-                        );
+                        // 3. Build Map safely using GroupBy
+                        // This prevents a crash if your DB accidentally has both "MAIN" and "Main"
+                        var map = trans
+                            .GroupBy(t => (t.En ?? "").Trim())
+                            .ToDictionary(
+                                g => g.Key,
+                                g => g.First().Gu ?? string.Empty,
+                                StringComparer.OrdinalIgnoreCase
+                            );
 
+                        // 4. Update Rows
                         foreach (var row in DataRows)
                         {
-                            if (map.TryGetValue(row.BreakerDescription, out var guText) && !string.IsNullOrWhiteSpace(guText))
+                            var lookupKey = (row.BreakerDescription ?? "").Trim();
+
+                            // If translation exists, use it. Otherwise, keep English (No "Breaker 1" fallback)
+                            if (map.TryGetValue(lookupKey, out var guText) && !string.IsNullOrWhiteSpace(guText))
                             {
                                 row.BreakerDescription = guText;
                             }
@@ -135,7 +164,4 @@ namespace FX5u_Web_HMI_App.Pages
             }
         }
     }
-
-    // DTO Class for the View
-
 }
