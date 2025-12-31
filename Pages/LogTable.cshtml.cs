@@ -29,7 +29,7 @@ namespace FX5u_Web_HMI_App.Pages
 
         // Pagination (GET-bound)
         [BindProperty(SupportsGet = true)] public int CurrentPage { get; set; } = 1;
-        public int PageSize { get; set; } = 10;
+        public int PageSize { get; set; } = 10000;
         public int TotalPages { get; set; }
         public bool HasPreviousPage => CurrentPage > 1;
         public bool HasNextPage => CurrentPage < TotalPages;

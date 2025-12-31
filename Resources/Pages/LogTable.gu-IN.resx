@@ -104,4 +104,7 @@
 	<data name="HOME" xml:space="preserve">
     <value>હોમ</value>
   </data>
+	<data name="PREV" xml:space="preserve">
+    <value>પાછળ</value>
+  </data>
 </root>

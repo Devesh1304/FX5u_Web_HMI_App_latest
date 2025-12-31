@@ -427,21 +427,53 @@
                 else el.textContent = data[key];
             });
 
-            // Bars, visibility tied to D1001 bits
-            if (data.d1001 !== undefined) {
-                const showInBar = (data.d1001 >> 6) & 1;
-                const showOutBar = (data.d1001 >> 5) & 1;
-                document.getElementById('rackingInContainer').style.display = showInBar ? 'flex' : 'none';
-                document.getElementById('rackingOutContainer').style.display = showOutBar ? 'flex' : 'none';
-            }
-            if (data.rackingInValue !== undefined) {
-                document.getElementById('rackingInBar').style.width = (data.rackingInValue / 440).toFixed(1) + '%';
-                document.getElementById('rackingInValue').textContent = (data.rackingInValue / 440).toFixed(1) + '%';
-            }
-            if (data.rackingOutValue !== undefined) {
-                document.getElementById('rackingOutBar').style.width = (data.rackingOutValue / 440).toFixed(1) + '%';
-                document.getElementById('rackingOutValue').textContent = (data.rackingOutValue / 440).toFixed(1) + '%';
-            }
+                   // ---------------------------------------------------------
+                    // --- NEW DYNAMIC BAR GRAPH LOGIC (Variable Limit D900) ---
+                    // ---------------------------------------------------------
+
+                    // 1. Get the Limit from D900 (TotalTravelLength)
+                    // Use 1 as a fallback to avoid division by zero if D900 is 0
+                    let maxLimit = (data.totalTravelLength && data.totalTravelLength > 0)
+                                   ? data.totalTravelLength
+                                   : 1;
+
+                    // 2. Racking In Bar
+                    if (data.rackingInValue !== undefined) {
+                        // Calculate Percentage: (Current / Max) * 100
+                        let pctIn = (data.rackingInValue / maxLimit) * 100;
+
+                        // Keep it between 0% and 100%
+                        if (pctIn > 100) pctIn = 100;
+                        if (pctIn < 0) pctIn = 0;
+
+                        document.getElementById('rackingInBar').style.width = pctIn.toFixed(1) + '%';
+                        document.getElementById('rackingInValue').textContent = pctIn.toFixed(1) + '%';
+                    }
+
+                    // 3. Racking Out Bar
+                    if (data.rackingOutValue !== undefined) {
+                        // Calculate Percentage
+                        let pctOut = (data.rackingOutValue / maxLimit) * 100;
+
+                        // Keep it between 0% and 100%
+                        if (pctOut > 100) pctOut = 100;
+                        if (pctOut < 0) pctOut = 0;
+
+                        document.getElementById('rackingOutBar').style.width = pctOut.toFixed(1) + '%';
+                        document.getElementById('rackingOutValue').textContent = pctOut.toFixed(1) + '%';
+                    }
+
+                    // ---------------------------------------------------------
+                    // --- END BAR GRAPH LOGIC ---
+                    // ---------------------------------------------------------
+
+                    // Visibility tied to D1001 bits
+                    if (data.d1001 !== undefined) {
+                        const showInBar = (data.d1001 >> 6) & 1;
+                        const showOutBar = (data.d1001 >> 5) & 1;
+                        document.getElementById('rackingInContainer').style.display = showInBar ? 'flex' : 'none';
+                        document.getElementById('rackingOutContainer').style.display = showOutBar ? 'flex' : 'none';
+                    }
 
             // Cache words for bit math
             for (const k in registerValues) {

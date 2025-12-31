@@ -509,8 +509,8 @@
                     button.addEventListener('mousedown', pressAction);
                     button.addEventListener('mouseup', releaseAction);
                     button.addEventListener('mouseleave', releaseAction);
-                    button.addEventListener('touchstart', (e) => { e.preventDefault(); pressAction(); });
-                    button.addEventListener('touchend', (e) => { e.preventDefault(); releaseAction(); });
+                    button.addEventListener('touchstart', () => {  pressAction();}, { passive: true });
+                    button.addEventListener('touchend', () => {  releaseAction(); });
                 }
 
                 // --- 2. Handle Standard CLICK Actions (toggle, set, reset) ---
@@ -543,8 +543,8 @@
                     button.addEventListener('mousedown', press);
                     button.addEventListener('mouseup', release);
                     button.addEventListener('mouseleave', release);
-                    button.addEventListener('touchstart', (e) => { e.preventDefault(); press(); });
-                    button.addEventListener('touchend', (e) => { e.preventDefault(); release(); });
+                    button.addEventListener('touchstart', () => {  press(); } , { passive: true });
+                    button.addEventListener('touchend', () => {  release(); });
                 }
             });
 

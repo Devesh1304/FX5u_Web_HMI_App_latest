@@ -230,6 +230,7 @@
 
     <div class="footer-nav">
         <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-home">@Localizer["HOME"]</button>
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-prev">@Localizer["PREV"]</button>
     </div>
 </div>
 
@@ -285,6 +286,7 @@
             }
 
             document.getElementById('btn-home')?.addEventListener('click', () => { window.location.href = '/Index'; });
+            document.getElementById('btn-prev')?.addEventListener('click', () => { window.location.href = '/History'; });
         })();
     </script>
 }
