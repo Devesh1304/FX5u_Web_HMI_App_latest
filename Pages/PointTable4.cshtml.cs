@@ -29,8 +29,8 @@ namespace FX5u_Web_HMI_App.Pages
             { nameof(SpeedWrite1), "D3865" }, { nameof(AccWrite1), "D3866" }, { nameof(DeccWrite1), "D3867" }, { nameof(DwellTimeWrite1), "D3868" }, { nameof(AuxWrite1), "D3869" }, { nameof(MWrite1), "D3870" },
             { nameof(SpeedWrite2), "D3883" }, { nameof(AccWrite2), "D3884" }, { nameof(DeccWrite2), "D3885" }, { nameof(DwellTimeWrite2), "D3886" }, { nameof(AuxWrite2), "D3887" }, { nameof(MWrite2), "D3888" },
             { nameof(SpeedWrite3), "D3901" }, { nameof(AccWrite3), "D3902" }, { nameof(DeccWrite3), "D3903" }, { nameof(DwellTimeWrite3), "D3904" }, { nameof(AuxWrite3), "D3905" }, { nameof(MWrite3), "D3906" },
-            { nameof(MaxForwardTorque), "D3994" },
-            { nameof(MaxReverseTorque), "D3998" },
+            { nameof(MaxForwardTorque), "D3954" },
+            { nameof(MaxReverseTorque), "D3958" },
             { nameof(PointControlRegister), "D90" },
              { nameof(SetTolerance), "D3962" }
 

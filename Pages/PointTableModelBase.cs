@@ -160,6 +160,12 @@ namespace FX5u_Web_HMI_App.Pages
                 {
                     tasks.Add(ReadAndSetValueAsync(entry.Key, entry.Value, is32bit: false));
                 }
+                StatusBits = 0;
+                var resultY0 = await _slmpService.ReadBoolAsync("Y0", 1);
+                if (resultY0.IsSuccess && resultY0.Content[0])
+                {
+                    StatusBits |= (1 << 0);
+                }
 
                 // Optional: Read Y0 status if needed for base logic
                 // var y0Result = await _slmpService.ReadBoolAsync("Y0", 1);

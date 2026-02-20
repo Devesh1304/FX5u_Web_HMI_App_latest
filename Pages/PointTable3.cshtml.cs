@@ -23,7 +23,7 @@ namespace FX5u_Web_HMI_App.Pages
             { nameof(SpeedWrite1), "D3811" }, { nameof(AccWrite1), "D3812" }, { nameof(DeccWrite1), "D3813" }, { nameof(DwellTimeWrite1), "D3814" }, { nameof(AuxWrite1), "D3815" }, { nameof(MWrite1), "D3816" },
             { nameof(SpeedWrite2), "D3829" }, { nameof(AccWrite2), "D3830" }, { nameof(DeccWrite2), "D3831" }, { nameof(DwellTimeWrite2), "D3832" }, { nameof(AuxWrite2), "D3833" }, { nameof(MWrite2), "D3834" },
             { nameof(SpeedWrite3), "D3847" }, { nameof(AccWrite3), "D3848" }, { nameof(DeccWrite3), "D3849" }, { nameof(DwellTimeWrite3), "D3850" }, { nameof(AuxWrite3), "D3851" }, { nameof(MWrite3), "D3852" },
-            { nameof(MaxForwardTorque), "D3994" }, { nameof(MaxReverseTorque), "D3998" }, { nameof(PointControlRegister), "D90" }, { nameof(SetTolerance), "D3950" }
+            { nameof(MaxForwardTorque), "D3942" }, { nameof(MaxReverseTorque), "D3946" }, { nameof(PointControlRegister), "D90" }, { nameof(SetTolerance), "D3950" }
         };
         protected override Dictionary<string, string> ReadOnlyInt32Map => new()
         {

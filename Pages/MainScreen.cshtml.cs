@@ -18,6 +18,7 @@ namespace FX5u_Web_HMI_App.Pages
         private readonly LogDbContext _db;
 
         [BindProperty] public int MaxForwardTorque { get; set; }
+        [BindProperty] public int StatusBits { get; set; }
         [BindProperty] public int MaxReverseTorque { get; set; }
         [BindProperty] public int ServoError { get; set; }
         [BindProperty] public int ContOffTime { get; set; }
@@ -36,6 +37,7 @@ namespace FX5u_Web_HMI_App.Pages
         [BindProperty] public int D4 { get; set; }
         [BindProperty] public int D1402 { get; set; }
         [BindProperty] public int D90 { get; set; }
+        [BindProperty] public int D3978 { get; set; }
 
         [BindProperty] public string BreakerTypeName1 { get; set; }
         [BindProperty] public string BreakerTypeName2 { get; set; }
@@ -262,17 +264,25 @@ namespace FX5u_Web_HMI_App.Pages
                 MaxForwardTorque = (await _slmpService.ReadInt16Async("D800")).Content;
                 MaxReverseTorque = (await _slmpService.ReadInt16Async("D802")).Content;
                 D1402 = (await _slmpService.ReadInt16Async("D1402")).Content;
+                D3978 = (await _slmpService.ReadInt16Async("D3978")).Content;
                 ServoError = (await _slmpService.ReadInt16Async("D1706")).Content;
+                InstantTorque = (await _slmpService.ReadInt16Async("D532")).Content;
 
 
                 // Singles (32-bit)
-                InstantTorque = (await _slmpService.ReadInt32Async("D532")).Content;
+
                 TotalTravelLength = (await _slmpService.ReadInt32Async("D900")).Content;
                 CurrentPosition = (await _slmpService.ReadInt32Async("D1702")).Content;
                 PositionAtEmergency = (await _slmpService.ReadInt32Async("D1708")).Content;
                 RackingInValue = (await _slmpService.ReadInt32Async("D1702")).Content;
                 RackingOutValue = (await _slmpService.ReadInt32Async("D1712")).Content;
 
+                StatusBits = 0;
+                var resultY0 = await _slmpService.ReadBoolAsync("Y0", 1);
+                if (resultY0.IsSuccess && resultY0.Content[0])
+                {
+                    StatusBits |= (1 << 0);
+                }
                 // English names for initial render
                 var names = await ReadBreakerTypesEnAsync();
                 BreakerTypeName1 = names[0];

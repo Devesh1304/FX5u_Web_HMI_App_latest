@@ -207,7 +207,7 @@
     </div>
     <div class="main-button-container">
         <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-home">HOME</button>
-        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-alm">ALARM</button>
+      
 
 
     </div>
@@ -298,13 +298,13 @@
                 visibilityBit: { register: 'PointControlRegisterD89', position: 1 },            
                redirect: '/Index'
             },
-        'btn-alm': {
+      /*  'btn-alm': {
                 actions: [
                   { type: 'reset', register: 'PointControlRegisterD89', position: 1 },
                 ],
                redirect: '/Alarms'
             }
-
+       */ 
         }
         const allRegisterIds = @Html.Raw(Json.Serialize(Model.GetType().GetProperties().Where(p => p.IsDefined(typeof(Microsoft.AspNetCore.Mvc.BindPropertyAttribute), false) && p.Name != "ConnectionStatus" && p.Name != "ErrorMessage").Select(p => p.Name)));
 

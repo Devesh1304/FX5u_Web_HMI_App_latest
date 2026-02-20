@@ -71,11 +71,14 @@
 	<data name="BREAKER POSITION SELECTION" xml:space="preserve">
     <value>બ્રેકર પોઝિશન પસંદગી</value>
   </data>
-	<data name="IN START" xml:space="preserve">
-    <value>અંદર શરૂ કરો</value>
+	<data name="SERVICE" xml:space="preserve">
+    <value>સર્વિસ</value>
   </data>
-	<data name="OUT START" xml:space="preserve">
-    <value>બહાર શરૂ કરો</value>
+	<data name="TEST" xml:space="preserve">
+    <value>ટેસ્ટ</value>
+  </data>
+	<data name="DOOR CLOSED" xml:space="preserve">
+		<value>દરવાજો બંધ</value>
   </data>
 	<data name="POSITION AT EMG. (mm):" xml:space="preserve">
     <value>ઇમરજન્સી પોઝિશન (mm):</value>
@@ -83,8 +86,8 @@
 	<data name="INTERLOCKS" xml:space="preserve">
     <value>ઇન્ટરલોક</value>
   </data>
-	<data name="BREAKER" xml:space="preserve">
-    <value>બ્રેકર</value>
+	<data name="BREAKER OFF" xml:space="preserve">
+    <value>બ્રેકર બંધ</value>
   </data>
 	<data name="TROLLEY BRAKES APPLIED" xml:space="preserve">
     <value>ટ્રોલી બ્રેક લાગુ</value>

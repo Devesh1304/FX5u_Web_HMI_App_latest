@@ -7,7 +7,7 @@
     /* Clean styles compatible with _Layout */
     .container {
         background-color: #fff;
-        padding: 40px;
+        padding: 20px;
         border-radius: 10px;
         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         max-width: 900px;
@@ -224,7 +224,8 @@
             PointControlRegisterD2: 0,
             PointControlRegisterD3: 0,
             PointControlRegisterD4: 0,
-            PointControlRegisterD1402: 0
+            PointControlRegisterD1402: 0,
+            StatusBits:0
 
             // Add other control registers here if needed
         };
@@ -287,6 +288,8 @@
                 { type: 'reset', register: 'PointControlRegisterD1402', position: 5 },
                 ],
                 momentarySideEffect: { address: 'M501' },
+                visibilityBit: { register: 'PointControlRegisterD89', position: 0 },
+                conditionBit: { register: 'StatusBits', position: 0 },
                redirect: '/Index'
             },
         'btn-alm': {
@@ -395,7 +398,7 @@
 
                 if (config.visibilityBit) {
                     const isVisible = (registerValues[config.visibilityBit.register] >> config.visibilityBit.position) & 1;
-                    button.style.visibility = isVisible ? 'hidden' : 'visible';
+                    button.style.visibility = isVisible ? 'visible' : 'hidden';
                 }
             }
         }
@@ -489,6 +492,17 @@
             document.querySelectorAll('.hmi-interactive-btn').forEach(button => {
                 const config = buttonConfig[button.id];
                 if (!config) return;
+                const isBlocked = () => {
+                    if (!config.conditionBit) return false;
+
+                    const val = registerValues[config.conditionBit.register];
+                    if (val === undefined) return false;
+
+                    const cond = (val >> config.conditionBit.position) & 1;
+
+                    // Logic: Block if bit is 1. (Swap to !cond if you want to Block if 0)
+                    return (config.conditionBehavior === 'allowOnHigh') ? !cond : !!cond;
+                };
 
                 const momentaryAction = config.actions.find(a => a.type === 'momentary');
                 const clickActions = config.actions.filter(a => a.type !== 'momentary');
@@ -496,6 +510,7 @@
                 // --- 1. Handle PRIMARY Momentary Actions (if they exist) ---
                 if (momentaryAction) {
                     const pressAction = async () => {
+                        if (isBlocked()) return; // <--- BLOCK CHECK
                         // ... condition check logic can be added here if needed ...
                         let newValue = registerValues[momentaryAction.register] | (1 << momentaryAction.position);
                         await writeRegister(momentaryAction.register, newValue.toString());
@@ -518,7 +533,7 @@
                     button.addEventListener('click', async () => {
                         try {
                             // ... your condition check logic here ...
-
+                            if (isBlocked()) return; // <--- BLOCK CHECK
                             if (clickActions.length > 0) {
                                 await performActionsAndAwait(clickActions);
                             }
@@ -537,8 +552,13 @@
                 // --- 3. Handle MOMENTARY SIDE-EFFECTS (separate logic) ---
                 if (config.momentarySideEffect) {
                     const address = config.momentarySideEffect.address;
-                    const press = () => writeBit(address, true);
-                    const release = () => writeBit(address, false);
+                    const press = () => {
+                                 if (!isBlocked()) writeBit(address, true); // <--- BLOCK CHECK
+                    };
+                    const release = () => {
+                                 // Always release to be safe
+                     writeBit(address, false);
+                    };
 
                     button.addEventListener('mousedown', press);
                     button.addEventListener('mouseup', release);

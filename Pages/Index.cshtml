@@ -19,26 +19,27 @@
         align-items: flex-start;
         min-height: 100vh;
         margin: 0;
-        padding-top: 50px;
+        padding-top: 20px;
     }
 
     .container {
         background-color: #ffffff;
-        padding: 40px;
+        padding: 20px;
         border-radius: 10px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         width: 100%;
-        max-width: 800px;
+        max-width: 700px;
         text-align: center;
     }
 
     h1 {
         color: #007bff;
-        margin-bottom: 15px;
+        margin-bottom: 5px;
+        font-size: 1.8em;
     }
 
     h2 {
-        font-size: 1.5em;
+        font-size: 1.2em;
         color: #6c757d;
         margin-bottom: 30px;
     }
@@ -84,14 +85,15 @@
     }
 
     .hmi-btn {
-        padding: 15px;
-        font-size: 1.1em;
+        padding: 10px 5px;
+        font-size: 0.95em;
         font-weight: bold;
         color: white;
         border: 2px solid #343a40;
         border-radius: 5px;
         cursor: pointer;
         transition: background-color 0.3s ease;
+        min-height: 45px;
     }
 
     .btn-green {
@@ -107,12 +109,12 @@
     }
 
     .zone {
-        margin-top: 30px;
+        margin-top: 15px;
         text-align: left;
     }
 
         .zone h3 {
-            font-size: 1.3em;
+            font-size: 1.1em;
             color: #495057;
             margin-bottom: 15px;
             border-bottom: 2px solid #dee2e6;
@@ -122,6 +124,11 @@
     .zone-grid-4 {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+   .zone-grid-4-single {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
         gap: 10px;
     }
 
@@ -200,8 +207,8 @@
     <div class="zone">
         <h3>@Localizer["BREAKER POSITION SELECTION"]</h3>
         <div class="position-selection-grid">
-            <button class="hmi-btn hmi-interactive-btn" id="btn-in-start">@Localizer["IN START"]</button>
-            <button class="hmi-btn hmi-interactive-btn" id="btn-out-start">@Localizer["OUT START"]</button>
+            <button class="hmi-btn hmi-interactive-btn" id="btn-in-start">@Localizer["SERVICE"]</button>
+            <button class="hmi-btn hmi-interactive-btn" id="btn-out-start">@Localizer["TEST"]</button>
             <div class="position-display-item">
                 <label style="padding: 0 10px;">@Localizer["POSITION AT EMG. (mm):"]</label>
                 <span class="read-only-value" id="PositionAtEmergency"></span>
@@ -211,15 +218,16 @@
 
     <div class="zone">
         <h3>@Localizer["INTERLOCKS"]</h3>
-        <div class="zone-grid-3">
-            <button class="hmi-btn hmi-interactive-btn" id="btn-brk-on">@Localizer["BREAKER"]</button>
+        <div class="zone-grid-4-single">
+            <button class="hmi-btn hmi-interactive-btn" id="btn-brk-on">@Localizer["BREAKER OFF"]</button>
+            <button class="hmi-btn hmi-interactive-btn" id="btn-door">@Localizer["DOOR CLOSED"]</button>
             <button class="hmi-btn hmi-interactive-btn" id="btn-trolley">@Localizer["TROLLEY BRAKES APPLIED"]</button>
-            <button class="hmi-btn hmi-interactive-btn" id="btn-person">@Localizer["PERSON IN SAFE ZONE"]</button>
+            <button class="hmi-btn hmi-interactive-btn" id="btn-person">@Localizer["PERSON IN SAFE ZONE"]</button>            
         </div>
     </div>
 
     <div class="zone">
-        <h3>---------------------</h3>
+        <h3></h3>
         <div class="zone-grid-3">
             <button class="hmi-btn hmi-interactive-btn" id="btn-emg">@Localizer["EMERGENCY"]</button>
             <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-main">@Localizer["MAIN"]</button>
@@ -363,9 +371,14 @@
                 conditionBit: { register: 'D3', position: 5 },
                 conditionBehavior: 'allowOnHigh'
             },
+            'btn-door': {
+                actions: [{ type: 'toggle', register: 'D2', position: 4 }],
+                conditionBit: { register: 'D5', position: 0 },
+                conditionBehavior: 'allowOnHigh'
+            },
             'btn-trolley': {
                 actions: [{ type: 'toggle', register: 'D2', position: 5 }],
-                visibilityBit: { register: 'D1001', position: 1 },
+              //  visibilityBit: { register: 'D1001', position: 1 },
                 conditionBit:  { register: 'D5',    position: 1 },
                 conditionBehavior: 'allowOnHigh'
             },

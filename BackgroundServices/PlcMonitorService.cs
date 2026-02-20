@@ -213,13 +213,13 @@ namespace FX5u_Web_HMI_App.BackgroundServices
                         // 3. READ TORQUE & TOLERANCE (D3938 and D3994/98)
                         // These are far apart, so we read 2 small blocks or 1 large one. 
                         // D3938 to D3998 is 60 words. Let's read one block for simplicity.
-                        var miscBlock = await _slmpService.ReadInt16BlockAsync("D3938", 65);
+                        var miscBlock = await _slmpService.ReadInt16BlockAsync("D3930", 10);
                         if (miscBlock.IsSuccess)
                         {
                             var m = miscBlock.Content;
-                            data["SetTolerance"] = m[0];  // D3938 (Offset 0)
-                            data["MaxForwardTorque"] = m[56]; // D3994 (Offset 56)
-                            data["MaxReverseTorque"] = m[60]; // D3998 (Offset 60)
+                            data["SetTolerance"] = m[8];  // D3938 (Offset 0)
+                            data["MaxForwardTorque"] = m[0]; // D3994 (Offset 56)
+                            data["MaxReverseTorque"] = m[4]; // D3998 (Offset 60)
                         }
 
                         await _hubContext.Clients.Group("PointTable2").SendAsync("ReceivePlcData", data);
@@ -300,13 +300,13 @@ namespace FX5u_Web_HMI_App.BackgroundServices
 
                         // 3. READ TORQUE & TOLERANCE
                         // SetTolerance: D3950, Torques: D3994/D3998
-                        var miscBlock = await _slmpService.ReadInt16BlockAsync("D3950", 50);
+                        var miscBlock = await _slmpService.ReadInt16BlockAsync("D3942", 10);
                         if (miscBlock.IsSuccess)
                         {
                             var m = miscBlock.Content;
-                            data["SetTolerance"] = m[0];  // D3950
-                            data["MaxForwardTorque"] = m[44]; // D3994 (Offset 44 from 3950)
-                            data["MaxReverseTorque"] = m[48]; // D3998 (Offset 48 from 3950)
+                            data["SetTolerance"] = m[8];  // D3950
+                            data["MaxForwardTorque"] = m[0]; // D3994 (Offset 44 from 3950)
+                            data["MaxReverseTorque"] = m[4]; // D3998 (Offset 48 from 3950)
                         }
 
                         await _hubContext.Clients.Group("PointTable3").SendAsync("ReceivePlcData", data);
@@ -387,13 +387,13 @@ namespace FX5u_Web_HMI_App.BackgroundServices
 
                         // 3. READ TORQUE & TOLERANCE
                         // SetTolerance: D3962, Torques: D3994/D3998
-                        var miscBlock = await _slmpService.ReadInt16BlockAsync("D3962", 40);
+                        var miscBlock = await _slmpService.ReadInt16BlockAsync("D3954", 10);
                         if (miscBlock.IsSuccess)
                         {
                             var m = miscBlock.Content;
-                            data["SetTolerance"] = m[0];  // D3962
-                            data["MaxForwardTorque"] = m[32]; // D3994 (Offset 32 from 3962)
-                            data["MaxReverseTorque"] = m[36]; // D3998 (Offset 36 from 3962)
+                            data["SetTolerance"] = m[8];  // D3962
+                            data["MaxForwardTorque"] = m[0]; // D3994 (Offset 32 from 3962)
+                            data["MaxReverseTorque"] = m[4]; // D3998 (Offset 36 from 3962)
                         }
 
                         await _hubContext.Clients.Group("PointTable4").SendAsync("ReceivePlcData", data);

@@ -152,9 +152,10 @@ namespace FX5u_Web_HMI_App.Pages
                 ActuatorInSetTime = (await _slmpService.ReadInt16Async("D3504")).Content;
                 ActuatorOutSetTime = (await _slmpService.ReadInt16Async("D3506")).Content;
                 D1402 = (await _slmpService.ReadInt16Async("D1402")).Content;
+                InstantTorque = (await _slmpService.ReadInt16Async("D532")).Content;
 
                 // --- INDIVIDUAL READS: 32-bit integers ---
-                InstantTorque = (await _slmpService.ReadInt32Async("D532")).Content;
+
                 CurrentPosition = (await _slmpService.ReadInt32Async("D1702")).Content;
                 PositionAtEmergency = (await _slmpService.ReadInt32Async("D1708")).Content;
                 ServoJogSpeed = (await _slmpService.ReadInt32Async("D530")).Content;
