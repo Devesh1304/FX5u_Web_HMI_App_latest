@@ -16,10 +16,25 @@ document.addEventListener('DOMContentLoaded', () => {
    // const alarmCodeValue = document.getElementById('alarmCodeValue');
     const modalAcknowledgeBtn = document.getElementById('modalAcknowledgeBtn');
     const modalCloseBtn = alarmModal ? alarmModal.querySelector('.close-button') : null;
-
+    let activeAlarmCode = 0;
     const hideAlarmPopup = () => {
         if (alarmModal) {
+
+            // Check if the current alarm is Torque Limit (Code 2)
+            if (activeAlarmCode === 2) {
+                // Navigate to the new page
+                window.location.href = '/HomePointTable';
+
+                // Instantly hide modal and clear code during the page load delay
+                alarmModal.style.display = 'none';
+                activeAlarmCode = 0;
+
+                return; // Exit the function immediately
+            }
+
+            // Normal hide logic for all other alarms
             alarmModal.style.display = 'none';
+            activeAlarmCode = 0;
         }
     };
 
@@ -33,7 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: {
                         'Content-Type': 'application/json',
                         'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                    }
+                    },
+                    body: JSON.stringify({ AlarmCode: activeAlarmCode })
                 });
 
                 if (!response.ok) {
@@ -72,7 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const config = alarmConfig[alarmCode];
             modalTitle.textContent = config.title;
             modalMessage.textContent = config.message;
-          //  alarmCodeValue.textContent = alarmCode;
+            //  alarmCodeValue.textContent = alarmCode;
+            activeAlarmCode = alarmCode;
             alarmModal.style.display = 'flex';
         } else {
             hideAlarmPopup();
@@ -84,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await connection.start();
             console.log("SignalR Connected.");
+            await connection.invoke("RequestCurrentNavigationState");
         } catch (err) {
             console.log(err);
             setTimeout(start, 5000);

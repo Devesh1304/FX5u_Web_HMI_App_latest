@@ -59,58 +59,25 @@
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
 
-	<data name="Home Screen" xml:space="preserve">
-    <value>હોમ સ્ક્રીન</value>
+	<data name="Power Point Table" xml:space="preserve">
+    <value>પાવર પોઈન્ટ ટેબલ</value>
   </data>
-	<data name="CIRCUIT BREAKER REMOTE RACKING SYSTEM" xml:space="preserve">
-    <value>સર્કિટ બ્રેકર રિમોટ રેકિંગ સિસ્ટમ</value>
+	<data name="Jog Mode Screen" xml:space="preserve">
+    <value>અલાર્મ સ્ક્રીન</value> </data>
+	<data name="HOME" xml:space="preserve">
+    <value>હોમ</value>
   </data>
-	<data name="BREAKER TYPE SELECTION" xml:space="preserve">
-    <value>બ્રેકર પ્રકાર પસંદગી</value>
+	<data name="ALARM" xml:space="preserve">
+    <value>એલાર્મ</value>
   </data>
-	<data name="BREAKER POSITION SELECTION" xml:space="preserve">
-    <value>બ્રેકર પોઝિશન પસંદગી</value>
-  </data>
-	<data name="RACK IN" xml:space="preserve">
-    <value>રેક ઇન</value>
+	<data name="RESET" xml:space="preserve">
+    <value>રીસેટ</value>
   </data>
 	<data name="RACK OUT" xml:space="preserve">
     <value>રેક આઉટ</value>
   </data>
-	<data name="DOOR CLOSED" xml:space="preserve">
-		<value>દરવાજો બંધ</value>
+	<data name="CURRENT POSITION (mm):" xml:space="preserve">
+    <value>વર્તમાન સ્થિતિ (mm):</value>
   </data>
-	<data name="POSITION AT EMG. (mm):" xml:space="preserve">
-    <value>ઇમરજન્સી પોઝિશન (mm):</value>
-  </data>
-	<data name="INTERLOCKS" xml:space="preserve">
-    <value>ઇન્ટરલોક</value>
-  </data>
-	<data name="BREAKER OFF" xml:space="preserve">
-    <value>બ્રેકર બંધ</value>
-  </data>
-	<data name="TROLLEY BRAKES APPLIED" xml:space="preserve">
-    <value>ટ્રોલી બ્રેક લાગુ</value>
-  </data>
-	<data name="PERSON IN SAFE ZONE" xml:space="preserve">
-    <value>વ્યક્તિ સલામત ઝોનમાં</value>
-  </data>
-	<data name="EMERGENCY" xml:space="preserve">
-    <value>ઇમરજન્સી</value>
-  </data>
-	<data name="MAIN" xml:space="preserve">
-    <value>મુખ્ય</value>
-  </data>
-	<data name="JOG SELECTION" xml:space="preserve">
-    <value>જોગ પસંદગી</value>
-  </data>
-	<data name="BREAKER POSITION" xml:space="preserve">
-    <value>બ્રેકર પોઝિશન</value>
-  </data>
-	<data name="BREAKER SELECTION" xml:space="preserve">
-    <value>બ્રેકર પસંદગી</value>
-  </data>
-	<data name="TREND GRAPH" xml:space="preserve">
-    <value>ટ્રેન્ડ ગ્રાફ</value>
-  </data>
+
 </root>

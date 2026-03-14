@@ -1,8 +1,10 @@
 ﻿@page
 @model FX5u_Web_HMI_App.Pages.HomePointTableModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
 @{
+    ViewData["Title"] = Localizer["Home Point Table"];
 }
-
 <style>
     /* Clean styles compatible with _Layout */
     .container {
@@ -188,25 +190,25 @@
 </style>
 
 <div class="container text-center">
-    <h1>Home Point Table</h1>
+    <h1>@Localizer["Home Point Table"]</h1>
     @Html.AntiForgeryToken()
 
     <div class="status-message" id="connectionStatus"></div>
     <div class="error-message" id="errorMessage" style="display: none;"></div>
     <div class="main-button-container">
-        <button class="hmi-btn hmi-interactive-btn btn-green" id="btn-out">OUT START</button>
-        <button class="hmi-btn hmi-interactive-btn btn-green" id="btn-rst">RESET</button>
+        <button class="hmi-btn hmi-interactive-btn btn-green" id="btn-out">@Localizer["RACK OUT"]</button>
+        <button class="hmi-btn hmi-interactive-btn btn-green" id="btn-rst">@Localizer["RESET"]</button>
     </div>
 
     <partial name="Shared/_PowerPointTablePartial" model="Model" />
     <div class="write-status" id="writeStatusMessage"></div>
     <div>
-        <div class="register-item"><label>CURRENT POSITION (mm):</label><span class="read-only-value" id="CurrentPosition"></span></div>
+        <div class="register-item"><label>@Localizer["CURRENT POSITION (mm):"]</label><span class="read-only-value" id="CurrentPosition"></span></div>
 
     </div>
     <div class="main-button-container">
-        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-home">HOME</button>
-        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-alm">ALARM</button>
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-home">@Localizer["HOME"]</button>
+        <button class="btn-blue hmi-btn hmi-interactive-btn" id="btn-alm">@Localizer["ALARM"]</button>
       
    
 
@@ -219,6 +221,7 @@
         let registerValues = {
             PointControlRegister: 0,            
             PointControlRegisterD89: 0,
+            PointControlRegisterD90: 0,
             PointControlRegisterD91: 0,
             PointControlRegisterD1001: 0,
             PointControlRegisterD2: 0,
@@ -244,6 +247,8 @@
                 { type: 'set', register: 'PointControlRegisterD89', position: 0 },
 
             ],
+            visibilityBit: { register: 'PointControlRegisterD90', position: 0 , visibleWhen: 0},
+            conditionBit: { register: 'PointControlRegisterD4', position: 2 },
 
             },
             'btn-rst': {
@@ -266,6 +271,7 @@
                 
             ],
              momentarySideEffect: { address: 'M501' },
+              conditionBit: { register: 'StatusBits', position: 0 },
              redirect: '/Index'
           
             },
@@ -288,7 +294,7 @@
                 { type: 'reset', register: 'PointControlRegisterD1402', position: 5 },
                 ],
                 momentarySideEffect: { address: 'M501' },
-                visibilityBit: { register: 'PointControlRegisterD89', position: 0 },
+                visibilityBit: { register: 'PointControlRegisterD89', position: 0, visibleWhen: 1 },
                 conditionBit: { register: 'StatusBits', position: 0 },
                redirect: '/Index'
             },
@@ -296,6 +302,7 @@
                 actions: [
                   { type: 'reset', register: 'PointControlRegisterD89', position: 0 },
                 ],
+                 conditionBit: { register: 'StatusBits', position: 0 },
                redirect: '/Alarms'
             }
         }
@@ -396,10 +403,17 @@
                     }
                 }
 
-                if (config.visibilityBit) {
-                    const isVisible = (registerValues[config.visibilityBit.register] >> config.visibilityBit.position) & 1;
-                    button.style.visibility = isVisible ? 'visible' : 'hidden';
-                }
+                        if (config.visibilityBit) {
+                            // 1. Get the current bit (0 or 1)
+                            const bitValue = (registerValues[config.visibilityBit.register] >> config.visibilityBit.position) & 1;
+
+                            // 2. Determine what state the button WANTS to see (default to 1 if not specified)
+                            const targetState = config.visibilityBit.visibleWhen !== undefined ? config.visibilityBit.visibleWhen : 1;
+
+                            // 3. Compare them. If they match, show it.
+                            const isVisible = (bitValue === targetState);
+                            button.style.visibility = isVisible ? 'visible' : 'hidden';
+                        }
             }
         }
         async function fetchData() {

@@ -73,6 +73,7 @@ namespace FX5u_Web_HMI_App.Pages
         [BindProperty] public int PointControlRegisterD3 { get; set; }
         [BindProperty] public int PointControlRegisterD1402 { get; set; }
         [BindProperty] public int PointControlRegisterD91 { get; set; }
+        [BindProperty] public int PointControlRegisterD90 { get; set; }
         [BindProperty] public int PointControlRegisterD5 { get; set; }
         [BindProperty] public int StatusBits { get; set; }
         [BindProperty] public int SetTolerance { get; set; }
@@ -165,6 +166,17 @@ namespace FX5u_Web_HMI_App.Pages
                 if (resultY0.IsSuccess && resultY0.Content[0])
                 {
                     StatusBits |= (1 << 0);
+                }
+
+                var resultM10 = await _slmpService.ReadBoolAsync("M10", 1);
+                if (resultM10.IsSuccess && resultM10.Content[0])
+                {
+                    StatusBits |= (1 << 1);
+                }
+                var resultM45 = await _slmpService.ReadBoolAsync("M45", 1);
+                if (resultM45.IsSuccess && resultM45.Content[0])
+                {
+                    StatusBits |= (1 << 2);
                 }
 
                 // Optional: Read Y0 status if needed for base logic

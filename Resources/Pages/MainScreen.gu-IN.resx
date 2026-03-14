@@ -89,11 +89,11 @@
 	<data name="BREAKER TYPE SELECTION" xml:space="preserve">
 	<value>બ્રેકર પ્રકાર પસંદગી</value>
   </data>
-	<data name="SERVICE" xml:space="preserve">
-	<value>સર્વિસ</value>
+	<data name="RACK IN" xml:space="preserve">
+    <value>રેક ઇન</value>
   </data>
-	<data name="TEST" xml:space="preserve">
-	<value>ટેસ્ટ</value>
+	<data name="RACK OUT" xml:space="preserve">
+    <value>રેક આઉટ</value>
   </data>
 	<data name="EMERGENCY" xml:space="preserve">
 	<value>ઇમરજન્સી</value>

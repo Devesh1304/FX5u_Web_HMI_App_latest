@@ -66,8 +66,8 @@ namespace FX5u_Web_HMI_App.Pages
 
         public async Task OnGet()
         {
-          //   // Index Page ID
-        //    await UpdateModelValuesAsync();
+            //   // Index Page ID
+            //    await UpdateModelValuesAsync();
         }
 
         public async Task<JsonResult> OnGetReadRegisters()
@@ -161,7 +161,8 @@ namespace FX5u_Web_HMI_App.Pages
                     );
 
                 // 5. Map Names (Directly to Gujarati OR Fallback to English)
-                var outNames = en.Select(s => {
+                var outNames = en.Select(s =>
+                {
                     var k = (s ?? "").Trim();
                     // Try to find Gujarati translation
                     if (dict.TryGetValue(k, out var gu) && !string.IsNullOrWhiteSpace(gu))
@@ -269,9 +270,46 @@ namespace FX5u_Web_HMI_App.Pages
                 return new JsonResult(new { status = "Error", message = ex.Message });
             }
         }
-    }
+        public async Task<JsonResult> OnPostAcknowledgeAlarm([FromBody] AlarmAcknowledgeRequest request)
+        {
+            if (request == null || request.AlarmCode <= 0)
+            {
+                return new JsonResult(new { success = false, message = "Invalid alarm code received." });
+            }
 
-    public class WriteRequest
+            try
+            {
+                // 1. Map the incoming Alarm Code to the specific PLC Reset Bit
+                if (request.AlarmCode == 2)
+                {
+                    var writeResult = await _slmpService.WriteBoolAsync("M805", true);
+                    if (!writeResult.IsSuccess)
+                    {
+                        throw new Exception($"Failed to write M805: {writeResult.Message}");
+                    }
+                }
+
+                // 2. Clear D102 to 0 for all successful acknowledges
+                // Cast to (short)0 to match standard 16-bit register writes
+                var clearD102Result = await _slmpService.WriteAsync("D102", (short)0);
+                if (!clearD102Result.IsSuccess)
+                {
+                    throw new Exception($"Failed to clear D102: {clearD102Result.Message}");
+                }
+
+                return new JsonResult(new { success = true, message = $"Alarm {request.AlarmCode} acknowledged successfully." });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to write alarm acknowledge bit to PLC for Alarm {AlarmCode}.", request.AlarmCode);
+
+                // Return status 400 (Bad Request) so the JavaScript 'catch' block handles it properly
+                Response.StatusCode = 400;
+                return new JsonResult(new { success = false, message = ex.Message });
+            }
+        }
+    }
+        public class WriteRequest
     {
         public string RegisterName { get; set; }
         public string Value { get; set; }
@@ -281,5 +319,10 @@ namespace FX5u_Web_HMI_App.Pages
     {
         public string Address { get; set; }
         public bool Value { get; set; }
+    }
+
+    public class AlarmAcknowledgeRequest
+    {
+        public int AlarmCode { get; set; }
     }
 }

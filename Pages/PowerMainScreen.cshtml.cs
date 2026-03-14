@@ -147,6 +147,7 @@ namespace FX5u_Web_HMI_App.Pages
 
 
                 var d1 = await _slmpService.WriteAsync("D1", 0);
+                await _slmpService.WriteAsync("D0", 11);
 
                 // --- INDIVIDUAL READS: 16-bit integers ---
 
