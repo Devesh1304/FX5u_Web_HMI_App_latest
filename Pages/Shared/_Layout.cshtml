@@ -166,6 +166,16 @@
                 margin-bottom: 20px;
             }
         }
+        /* --- DATE TIME DISPLAY --- */
+        .datetime-display {
+            color: #f8f9fa;
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-align: center;
+            flex-grow: 1; /* Pushes it to the center between the title and language box */
+        }
+
 
         /* --- SMALL PHONES (Narrow Screens) --- */
         @@media screen and (max-width: 480px) {
@@ -183,6 +193,9 @@
             .language-switcher {
                 justify-content: space-between;
             }
+            .datetime-display {
+                font-size: 0.9rem;
+            }
         }
     </style>
     @await RenderSectionAsync("Styles", required: false)
@@ -192,7 +205,9 @@
         <div class="brand-title">
             <a href="/Index">FX5U HMI SYSTEM</a>
         </div>
-
+        <div id="systemDateTime" class="datetime-display">
+            --/--/---- --:--:--
+        </div>
         <div class="language-switcher-container">
             <label for="langSelect">@Localizer["Language"]:</label>
             <select id="langSelect" onchange="setLanguage(this.value)">
@@ -243,7 +258,7 @@
                     }
                 }
             } catch (e) { }
-        });
+        });        
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

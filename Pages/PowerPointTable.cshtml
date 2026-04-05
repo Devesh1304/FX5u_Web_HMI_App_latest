@@ -560,7 +560,15 @@
                                }
                                let newValue = registerValues[action.register] & ~(1 << action.position);
                                await writeRegister(action.register, newValue.toString());
+                               const otherActions = config.actions.filter(a => a.type !== 'momentary');
+                               if (otherActions.length > 0) {
+                                          await performActionsAndAwait(otherActions);
+                               }
                                await fetchModbusData();
+                                      // 3. NOW redirect if a redirect is configured
+                               if (config.redirect) {
+                                          window.location.href = config.redirect;
+                               }
                            };
 
                            button.addEventListener('mousedown', pressAction);

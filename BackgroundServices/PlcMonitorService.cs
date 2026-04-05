@@ -45,6 +45,31 @@ namespace FX5u_Web_HMI_App.BackgroundServices
         {
             _logger.LogInformation("PLC Monitor Service is starting.");
 
+            // --- NEW RETRY LOGIC ---
+            bool timeSynced = false;
+            while (!timeSynced && !stoppingToken.IsCancellationRequested)
+            {
+                // Give the network 2 seconds to breathe before trying
+                await Task.Delay(2000, stoppingToken);
+
+                _logger.LogInformation("Attempting initial PLC Time Sync...");
+                await SyncSystemTimeWithPlc();
+
+                // Read the system year to see if the sync worked
+                // If the year is 2024 or later, we know the Pi has a real date now!
+                if (DateTime.Now.Year >= 2024)
+                {
+                    timeSynced = true;
+                    _logger.LogInformation("Time sync confirmed. Starting main monitor loop.");
+                }
+                else
+                {
+                    _logger.LogWarning("Time sync failed. Retrying in 5 seconds...");
+                    await Task.Delay(5000, stoppingToken);
+                }
+            }
+            // -----------------------
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
@@ -406,7 +431,6 @@ namespace FX5u_Web_HMI_App.BackgroundServices
                         if (currentNavValue != _lastNavigationValue)
                         {
                             _lastNavigationValue = currentNavValue; // Update state
-                            // Check if the value matches the condition to navigate
                             if (currentNavValue == 11)
                             {
                                 _logger.LogInformation("Navigation trigger detected! Sending command.");
@@ -533,6 +557,75 @@ namespace FX5u_Web_HMI_App.BackgroundServices
             // 1. Cast the lower short to ushort to treat bits as 0-65535 (unsigned).
             // 2. Use bitwise OR (|) instead of addition (+) for cleaner bit manipulation.
             return (int)((ushort)data[startIndex] | (data[startIndex + 1] << 16));
+        }
+        private async Task SyncSystemTimeWithPlc()
+        {
+            try
+            {
+                _logger.LogInformation("Attempting to sync Pi system time with PLC clock...");
+
+                // Read 6 registers starting from SD210 (Year, Month, Day, Hour, Minute, Second)
+                var result = await _slmpService.ReadInt16BlockAsync("D7990", 6);
+
+                if (result.IsSuccess)
+                {
+                    var timeData = result.Content;
+                    int year = timeData[0];
+                    int month = timeData[1];
+                    int day = timeData[2];
+                    int hour = timeData[3];
+                    int minute = timeData[4];
+                    int second = timeData[5];
+
+                    // 1. Log the exact numbers the PLC sent us to ensure they aren't zeros
+                    _logger.LogInformation($"Raw PLC Data - Y:{year} M:{month} D:{day} H:{hour} Min:{minute} S:{second}");
+
+                    // Sanity check: If the PLC returns year 0, the clock isn't set in the PLC!
+                    if (year < 2000)
+                    {
+                        _logger.LogWarning("PLC year is invalid (less than 2000). Aborting time sync.");
+                        return;
+                    }
+
+                    string formattedTime = $"{year:D4}-{month:D2}-{day:D2} {hour:D2}:{minute:D2}:{second:D2}";
+                    _logger.LogInformation($"Executing command: sudo date -s \"{formattedTime}\"");
+
+                    var psi = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "sudo",
+                        Arguments = $"date -s \"{formattedTime}\"",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true, // <-- NEW: Capture Linux errors
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+
+                    using var process = System.Diagnostics.Process.Start(psi);
+
+                    // <-- NEW: Read the error output from Linux
+                    string errors = await process.StandardError.ReadToEndAsync();
+                    string output = await process.StandardOutput.ReadToEndAsync();
+
+                    await process.WaitForExitAsync();
+
+                    if (!string.IsNullOrWhiteSpace(errors))
+                    {
+                        _logger.LogError($"Linux blocked the date command! Error: {errors}");
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"System time synchronized successfully. Linux output: {output}");
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Failed to read PLC time. Database logs may have incorrect timestamps.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred during Time Sync logic.");
+            }
         }
     }
  }
